@@ -54,6 +54,7 @@ type ServerConfig struct {
 	Listen        string `mapstructure:"listen" json:"listen" yaml:"listen"`
 	MaxConnection int    `mapstructure:"max-connection" json:"max-connection" yaml:"max-connection"`
 	Password      string `mapstructure:"password" json:"password" yaml:"password"`
+	DBNum         int    `mapstructure:"databases" json:"databases" yaml:"databases"`
 	TLS
 }
 

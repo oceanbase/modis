@@ -126,7 +126,7 @@ func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config
 	// Serve
 	s.ServCtx.StartTime = time.Now()
 	obkvServer, err := obkvrpc.NewServer(servCfg.MaxConnection, &s.CloseChan)
-	db := storage.NewDB(DefaultNamespace, DefaultDBNum, s.ServCtx.Storage)
+	var db *storage.DB
 	if err != nil {
 		log.Error("server", nil, "fail to create new OBKV RPC server", log.Errors(err))
 		return err
@@ -141,6 +141,11 @@ func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config
 			log.Warn("server", nil, "exceed max connection num", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			conn.Close()
 			continue
+		}
+		db, err = s.ServCtx.GetDB(0)
+		if err != nil {
+			log.Warn("server", nil, "fail to visit db", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
+			return err
 		}
 		s.clientNum += 1
 		cliCtx := conncontext.NewCodecCtx(conn, s.IDGenerator(), db)

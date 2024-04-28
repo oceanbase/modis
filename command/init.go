@@ -27,7 +27,7 @@ func init() {
 		"hello":  {Cmd: TempNotSupport, Arity: -1},
 		"quit":   {Cmd: Quit, Arity: 1},
 		"select": {Cmd: Select, Arity: 2},
-		"swapdb": {Cmd: TempNotSupport, Arity: 3},
+		"swapdb": {Cmd: SwapDB, Arity: 3},
 
 		// strings
 		"get":         {Cmd: Get, Arity: 2},

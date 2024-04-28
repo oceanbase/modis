@@ -17,6 +17,7 @@
 package conncontext
 
 import (
+	"errors"
 	"net"
 	"time"
 
@@ -24,11 +25,18 @@ import (
 	"github.com/oceanbase/modis/storage"
 )
 
+const (
+	// DefaultNamespace is default namespace of DB
+	DefaultNamespace = "default"
+)
+
 // ServerContext connect server and clients
 type ServerContext struct {
 	Storage   storage.Storage
 	StartTime time.Time
 	Password  string
+	DbNum     int
+	dbs       []*storage.DB
 }
 
 // CodecContext completes interface of OBKV RPC Server
@@ -43,13 +51,28 @@ type CodecContext struct {
 
 // NewServerContext creates a new client context
 func NewServerContext(s storage.Storage, cfg *config.ServerConfig) *ServerContext {
-	return &ServerContext{
+	sc := &ServerContext{
 		Storage:  s,
 		Password: cfg.Password,
+		DbNum:    cfg.DBNum,
+		dbs:      make([]*storage.DB, 0, cfg.DBNum),
 	}
+
+	for i := 0; i < cfg.DBNum; i++ {
+		sc.dbs = append(sc.dbs, storage.NewDB(DefaultNamespace, int64(i), s))
+	}
+	return sc
 }
 
 // NewCodecCtx creates a new client context
 func NewCodecCtx(conn net.Conn, id int64, db *storage.DB) *CodecContext {
 	return &CodecContext{Conn: conn, ID: id, DB: db, CloseChan: make(chan struct{})}
+}
+
+// GetDB prevents visit db out of range
+func (sc *ServerContext) GetDB(index int) (*storage.DB, error) {
+	if index >= sc.DbNum {
+		return nil, errors.New("visit db out of range")
+	}
+	return sc.dbs[index], nil
 }

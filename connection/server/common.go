@@ -21,8 +21,6 @@ import (
 )
 
 const (
-	// DefaultNamespace is default namespace of DB
-	DefaultNamespace = "default"
 	// InitClientID + 1 is the first client's ID
 	InitClientID = 0
 	// DefaultDBNum is default num of DB

@@ -53,9 +53,11 @@ func Echo(ctx *CmdContext) error {
 
 // Ping the server
 func Ping(ctx *CmdContext) error {
-	args := ctx.Args
-	if len(args) > 0 {
-		ctx.OutContent = resp.EncBulkString(util.BytesToString(args[0]))
+	argc := len(ctx.Args)
+	if argc > 2 {
+		ctx.OutContent = resp.ErrWrongArgs(ctx.Name)
+	} else if argc > 0 {
+		ctx.OutContent = resp.EncBulkString(util.BytesToString(ctx.Args[0]))
 	} else {
 		ctx.OutContent = resp.ResponsesPong
 	}
@@ -67,29 +69,66 @@ func Select(ctx *CmdContext) error {
 	args := ctx.Args
 	idx, err := strconv.Atoi(util.BytesToString(args[0]))
 	if err != nil {
+		ctx.OutContent = resp.ErrOutRange(0, int64(ctx.ServCtx.DbNum))
+		return nil
+	}
+	if idx < 0 || idx >= ctx.ServCtx.DbNum {
 		ctx.OutContent = resp.EncError("ERR invalid DB index")
 		return nil
 	}
-	if idx < 0 {
-		ctx.OutContent = resp.EncError("ERR invalid DB index")
+
+	var db *storage.DB
+	db, err = ctx.ServCtx.GetDB(idx)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR fetch db failed")
 		return nil
 	}
-	namespace := ctx.CodecCtx.DB.Namespace
-	ctx.CodecCtx.DB = storage.NewDB(namespace, int64(uint64(idx)), ctx.ServCtx.Storage)
+	ctx.CodecCtx.DB = db
 	ctx.OutContent = resp.ResponsesOk
 	return nil
 }
 
 // Quit asks the server to close the connection
 func Quit(ctx *CmdContext) error {
-	// TODO: implement it
-	// close(ctx.CodecCtx.Done)
+	close(ctx.CodecCtx.CloseChan)
 	ctx.OutContent = resp.ResponsesOk
 	return nil
 }
 
 // SwapDB swaps two Redis databases
 func SwapDB(ctx *CmdContext) error {
-	ctx.OutContent = resp.EncError("ERR not supported")
+	args := ctx.Args
+	idx1, err := strconv.Atoi(util.BytesToString(args[0]))
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR invalid first DB index")
+		return nil
+	}
+	idx2, err := strconv.Atoi(util.BytesToString(args[1]))
+	if err != nil {
+		ctx.OutContent = resp.EncError("invalid second DB index")
+		return nil
+	}
+
+	if idx1 < 0 || idx1 >= ctx.ServCtx.DbNum ||
+		idx2 < 0 || idx2 >= ctx.ServCtx.DbNum {
+		ctx.OutContent = resp.EncError("ERR invalid DB index")
+		return nil
+	}
+
+	var db1, db2 *storage.DB
+	db1, err = ctx.ServCtx.GetDB(idx1)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR fetch db failed")
+		return nil
+	}
+	db2, err = ctx.ServCtx.GetDB(idx2)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR fetch db failed")
+		return nil
+	}
+	tmpDB := *db1
+	*db1 = *db2
+	*db2 = tmpDB
+	ctx.OutContent = resp.ResponsesOk
 	return nil
 }
