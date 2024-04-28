@@ -36,6 +36,8 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/obkvrpc"
 )
 
+const maxQueueCmd = 100
+
 // Server accept request from redis clients
 type Server struct {
 	ServCtx     *conncontext.ServerContext
@@ -144,6 +146,6 @@ func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config
 		s.clientNum += 1
 		cliCtx := conncontext.NewCodecCtx(conn, s.IDGenerator(), db)
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
-		go obkvServer.ServeCodec(redisSrv)
+		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
 	}
 }
