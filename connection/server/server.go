@@ -30,6 +30,7 @@ import (
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/storage"
+	"github.com/oceanbase/modis/util"
 	"github.com/pkg/errors"
 
 	"github.com/oceanbase/obkv-table-client-go/obkvrpc"
@@ -43,7 +44,6 @@ type Server struct {
 	Listener    net.Listener
 	IDGenerator func() int64
 	CloseChan   chan struct{}
-	clientNum   int
 }
 
 // NewServer creates a new server
@@ -51,8 +51,7 @@ func NewServer(servCtx *conncontext.ServerContext, idGenerator func() int64) *Se
 	return &Server{
 		ServCtx:     servCtx,
 		IDGenerator: idGenerator,
-		CloseChan:   make(chan struct{}),
-		clientNum:   0}
+		CloseChan:   make(chan struct{})}
 }
 
 // Close close server, error should not be returned during execution
@@ -69,6 +68,12 @@ func (s *Server) Close() {
 		err = s.ServCtx.Storage.Close()
 		if err != nil {
 			log.Warn("server", nil, "fail to close storage", log.Errors(err))
+		}
+	}
+	if s.ServCtx.SuperMode == conncontext.SupervisedSystemd {
+		err := util.SdNotify("STOPPING=1\n")
+		if err != nil {
+			log.Warn("server", nil, "fail to do SdNotify", log.Errors(err))
 		}
 	}
 }
@@ -96,6 +101,42 @@ func (s *Server) SignalHandle(gnet *gracenet.Net, sigChan chan os.Signal) {
 	}
 }
 
+func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
+	s.ServCtx.StartTime = time.Now()
+	obkvServer, err := obkvrpc.NewServer(servCfg.MaxConnection, &s.CloseChan)
+	var db *storage.DB
+	if err != nil {
+		log.Error("server", nil, "fail to create new OBKV RPC server", log.Errors(err))
+		return err
+	}
+	s.ServCtx.StartMetricsTicker()
+	for { // until Accept() return error
+		conn, err := s.Listener.Accept()
+		if err != nil {
+			log.Error("server", nil, "fail to accept connection", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
+			return err
+		}
+		if s.ServCtx.ClientNum+1 > servCfg.MaxConnection {
+			log.Warn("server", nil, "exceed max connection num", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
+			conn.Close()
+			s.ServCtx.RejectClientNum++
+			continue
+		}
+		db, err = s.ServCtx.GetDB(0)
+		if err != nil {
+			log.Warn("server", nil, "fail to visit db", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
+			return err
+		}
+		s.ServCtx.ClientNum++
+		s.ServCtx.TotalClientNum++
+		cliID := s.IDGenerator()
+		cliCtx := conncontext.NewCodecCtx(conn, cliID, db)
+		s.ServCtx.Clients[cliID] = cliCtx
+		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
+		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
+	}
+}
+
 // ListenAndServe handle connection and request from clients
 func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config) error {
 	defer func() {
@@ -106,6 +147,7 @@ func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config
 	var err error
 	if servCfg.MaxConnection > 10000 || servCfg.MaxConnection < 1 {
 		err = errors.New("server max connection should be >= 1 and <= 10000")
+		log.Warn("server", nil, "invalid server config: max_connection", log.Errors(err), log.Int("max_connection", servCfg.MaxConnection))
 		return err
 	}
 	// Listen
@@ -118,38 +160,23 @@ func (s *Server) ListenAndServe(servCfg *config.ServerConfig, tlsCfg *tls.Config
 	if tlsCfg != nil {
 		s.Listener = tls.NewListener(s.Listener, tlsCfg)
 	}
+
+	if s.ServCtx.SuperMode == conncontext.SupervisedSystemd {
+		err = util.SdNotify("STATUS=Ready to accept connections\n")
+		if err != nil {
+			return err
+		}
+		err = util.SdNotify("READY=1\n")
+		if err != nil {
+			return err
+		}
+	}
+
 	log.Debug("server", nil, "tcp: listen to ", log.String("addr", servCfg.Listen))
 	// process signal
 	sigChan := make(chan os.Signal, 1)
 	go s.SignalHandle(gnet, sigChan)
 
 	// Serve
-	s.ServCtx.StartTime = time.Now()
-	obkvServer, err := obkvrpc.NewServer(servCfg.MaxConnection, &s.CloseChan)
-	var db *storage.DB
-	if err != nil {
-		log.Error("server", nil, "fail to create new OBKV RPC server", log.Errors(err))
-		return err
-	}
-	for { // until Accept() return error
-		conn, err := s.Listener.Accept()
-		if err != nil {
-			log.Error("server", nil, "fail to accept connection", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
-			return err
-		}
-		if s.clientNum+1 > servCfg.MaxConnection {
-			log.Warn("server", nil, "exceed max connection num", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
-			conn.Close()
-			continue
-		}
-		db, err = s.ServCtx.GetDB(0)
-		if err != nil {
-			log.Warn("server", nil, "fail to visit db", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
-			return err
-		}
-		s.clientNum += 1
-		cliCtx := conncontext.NewCodecCtx(conn, s.IDGenerator(), db)
-		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
-		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
-	}
+	return s.serve(servCfg)
 }

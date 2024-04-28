@@ -67,11 +67,12 @@ func Ping(ctx *CmdContext) error {
 // Select the logical database
 func Select(ctx *CmdContext) error {
 	args := ctx.Args
-	idx, err := strconv.Atoi(util.BytesToString(args[0]))
+	idxTmp, err := strconv.Atoi(util.BytesToString(args[0]))
 	if err != nil {
 		ctx.OutContent = resp.ErrOutRange(0, int64(ctx.ServCtx.DbNum))
 		return nil
 	}
+	idx := int64(idxTmp)
 	if idx < 0 || idx >= ctx.ServCtx.DbNum {
 		ctx.OutContent = resp.EncError("ERR invalid DB index")
 		return nil
@@ -95,7 +96,7 @@ func Quit(ctx *CmdContext) error {
 	return nil
 }
 
-// SwapDB swaps two Redis databases
+// SwapDB swaps two modis databases
 func SwapDB(ctx *CmdContext) error {
 	args := ctx.Args
 	idx1, err := strconv.Atoi(util.BytesToString(args[0]))
@@ -109,19 +110,19 @@ func SwapDB(ctx *CmdContext) error {
 		return nil
 	}
 
-	if idx1 < 0 || idx1 >= ctx.ServCtx.DbNum ||
-		idx2 < 0 || idx2 >= ctx.ServCtx.DbNum {
+	if idx1 < 0 || int64(idx1) >= ctx.ServCtx.DbNum ||
+		idx2 < 0 || int64(idx2) >= ctx.ServCtx.DbNum {
 		ctx.OutContent = resp.EncError("ERR invalid DB index")
 		return nil
 	}
 
 	var db1, db2 *storage.DB
-	db1, err = ctx.ServCtx.GetDB(idx1)
+	db1, err = ctx.ServCtx.GetDB(int64(idx1))
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR fetch db failed")
 		return nil
 	}
-	db2, err = ctx.ServCtx.GetDB(idx2)
+	db2, err = ctx.ServCtx.GetDB(int64(idx2))
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR fetch db failed")
 		return nil

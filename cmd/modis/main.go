@@ -20,11 +20,13 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"runtime/debug"
 
 	// "net/http"
 	// _ "net/http/pprof"
 	"os"
 
+	"github.com/oceanbase/modis/command"
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/connection/server"
@@ -34,15 +36,15 @@ import (
 
 // Version information.
 var (
-	// ReleaseVersion = "0.0.1"
-	CommitHash    string
-	BuildTS       string
-	BranchName    string
-	CommitLog     string
 	GolangVersion string
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error("main", nil, "modis panic, exit", log.Any("error", err), log.String("stack", string(debug.Stack())))
+		}
+	}()
 	// go func() {
 	// 	http.ListenAndServe(":6060", nil)
 	// }()
@@ -79,11 +81,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	srvCtx := conncontext.NewServerContext(s, &cfg.Server)
+	srvCtx, err := conncontext.NewServerContext(s, &cfg, configPath)
+	if err != nil {
+		log.Warn("main", "", "fail new server context", log.Errors(err))
+		os.Exit(1)
+	}
 	srv := server.NewServer(srvCtx, server.GenClientID())
 	if err := srv.ListenAndServe(&cfg.Server, tlsConfig); err != nil {
 		log.Warn("main", "", "fail to run server", log.Errors(err))
-		return
+		os.Exit(1)
 	}
 }
 
@@ -96,11 +102,11 @@ func readFlags() (showVersion bool, config string) {
 
 // ShowVersion print version info about modis
 func showVersion() {
+	bit := 32 << (^uint(0) >> 63)
 	fmt.Println("Welcome to modis.")
-	// fmt.Println("Release Version: ", ReleaseVersion)
-	fmt.Println("Git Commit Hash: ", CommitHash)
-	fmt.Println("Git Commit Log: ", CommitLog)
-	fmt.Println("Git Branch: ", BranchName)
-	fmt.Println("UTC Build Time:  ", BuildTS)
-	fmt.Println("Golang compiler Version: ", GolangVersion)
+	fmt.Println("Modis Version:", command.ModisVer)
+	fmt.Printf("SHA: %s:%s\n", command.GitSha1, command.GitDirty)
+	fmt.Println("Build ID:", command.BuildID)
+	fmt.Println("Bits:", bit)
+	fmt.Println("Golang compiler Version:", GolangVersion)
 }

@@ -17,7 +17,6 @@
 package server
 
 import (
-	"bufio"
 	"bytes"
 	"io"
 	"runtime/debug"
@@ -38,12 +37,11 @@ import (
 type RedisCodec struct {
 	CodecCtx *conncontext.CodecContext
 	ServCtx  *conncontext.ServerContext
-	Reader   *bufio.Reader
 }
 
 // NewRedisCodec creates a new client
 func NewRedisCodec(codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *RedisCodec {
-	client := &RedisCodec{CodecCtx: codecCtx, ServCtx: servCtx, Reader: bufio.NewReader(codecCtx.Conn)}
+	client := &RedisCodec{CodecCtx: codecCtx, ServCtx: servCtx}
 	client.CodecCtx.StartTime = time.Now()
 	return client
 }
@@ -86,6 +84,7 @@ func (rs *RedisCodec) WriteResponse(resp *obkvrpc.Response) error {
 			return err
 		}
 	}
+	rs.ServCtx.TotalWriteBytes.Inc(int64(len(resp.RspContent)))
 	return nil
 }
 
@@ -96,6 +95,7 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 
 	resp.ID = ctx.TraceID
 	resp.RspContent = []byte(ctx.OutContent)
+	rs.ServCtx.TotalCmdNum.Inc(1)
 	return nil
 }
 
@@ -108,10 +108,12 @@ func (rs *RedisCodec) Close() {
 			log.Errors(err), log.Int64("ID", rs.CodecCtx.ID),
 			log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()))
 	}
+	rs.ServCtx.ClientNum--
 }
 
 func (rs *RedisCodec) readCommand() ([][]byte, error) {
-	buf, err := rs.Reader.ReadBytes('\n')
+	lastReadBytes := *rs.CodecCtx.TotalBytes
+	buf, err := rs.CodecCtx.Reader.ReadBytes('\n')
 	if err != nil {
 		log.Warn("server", nil, "fail to read bytes", log.Errors(err))
 		return nil, err
@@ -137,15 +139,16 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 	if argc == 0 {
 		return [][]byte{}, nil
 	}
-
 	argv := make([][]byte, argc)
 	for i := 0; i < argc; i++ {
-		arg, err := resp.ReadBulkString(rs.Reader)
+		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader)
 		if err != nil {
 			log.Warn("server", nil, "fail to read bulk string", log.Errors(err))
 			return nil, err
 		}
 		argv[i] = arg
+		log.Debug("server", nil, "read command", log.Int("arg idx", i), log.String("val", string(arg)))
 	}
+	rs.ServCtx.TotalReadBytes.Inc((*rs.CodecCtx.TotalBytes) - lastReadBytes)
 	return argv, nil
 }

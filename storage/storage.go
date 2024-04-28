@@ -78,6 +78,9 @@ type Storage interface {
 	ZCard(ctx context.Context, db int64, key []byte) (int, error)
 	ZRem(ctx context.Context, db int64, key []byte, members [][]byte) (int, error)
 
+	// server commands
+	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
+
 	Close() error
 }
 

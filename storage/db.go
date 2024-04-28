@@ -26,6 +26,7 @@ type DB struct {
 	ID        int64
 	Storage   Storage
 	Ctx       context.Context
+	IsInit    bool
 }
 
 func NewDB(namespace string, id int64, storage Storage) *DB {
@@ -34,5 +35,6 @@ func NewDB(namespace string, id int64, storage Storage) *DB {
 		ID:        id,
 		Storage:   storage,
 		Ctx:       context.TODO(),
+		IsInit:    false,
 	}
 }

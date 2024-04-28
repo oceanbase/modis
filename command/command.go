@@ -19,6 +19,7 @@ package command
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
@@ -36,7 +37,24 @@ type CmdContext struct {
 	context.Context
 }
 
-// Command is a redis command implementation
+// CmdInfo describes a command with constraints
+type CmdInfo struct {
+	Cmd   Command
+	Arity int // number of arguments, it is possible to use -N to say >= N
+	Stats CmdStats
+}
+
+// CmdStat describes command statistics
+type CmdStats struct {
+	Calls    int64
+	MicroSec int64
+}
+
+func (cs *CmdStats) GetUsecPerCall() float64 {
+	return float64(cs.MicroSec) / float64(cs.Calls)
+}
+
+// Command is a modis command implementation
 type Command func(ctx *CmdContext) error
 
 // NewCmdContext create a new command context
@@ -74,15 +92,13 @@ func Call(ctx *CmdContext) {
 		ctx.OutContent = resp.ErrWrongArgs(ctx.Name)
 		return
 	}
+	st := time.Now()
 	err := cmdInfo.Cmd(ctx)
 	if err != nil {
 		log.Warn("command", ctx.TraceID, "fail to exec command", log.Errors(err))
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
-}
-
-// CmdInfo describes a command with constraints
-type CmdInfo struct {
-	Cmd   Command
-	Arity int // number of arguments, it is possible to use -N to say >= N
+	dur := time.Since(st)
+	cmdInfo.Stats.Calls++
+	cmdInfo.Stats.MicroSec += dur.Microseconds()
 }

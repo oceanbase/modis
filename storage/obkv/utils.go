@@ -20,6 +20,10 @@ import (
 	"errors"
 )
 
+const (
+	ttlColumnName = "expire_ts"
+)
+
 func setBit(bytes []byte, n int, value byte) (byte, error) {
 	if value != 0 && value != 1 {
 		return 0, errors.New("value must be 0 or 1")
