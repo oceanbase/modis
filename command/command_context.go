@@ -19,16 +19,14 @@ package command
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/oceanbase/modis/connection/conncontext"
-	"github.com/oceanbase/modis/log"
-	"github.com/oceanbase/modis/protocol/resp"
 )
 
 // CmdContext is the runtime context of a command
 type CmdContext struct {
-	Name       string   // command name，e.g. "set"
+	Name       string   // command name，e.g. "client"
+	FullName   string   // command name，e.g. "client|info"
 	Args       [][]byte // command's args，e.g. ["key", "value"]
 	OutContent string   // command's output
 	TraceID    string
@@ -37,10 +35,20 @@ type CmdContext struct {
 	context.Context
 }
 
+type CmdFlag int
+
+const (
+	CmdNone  CmdFlag = 0
+	CmdAdmin CmdFlag = 1 << iota
+	CmdSkipMonitor
+)
+
 // CmdInfo describes a command with constraints
 type CmdInfo struct {
-	Cmd   Command
-	Arity int // number of arguments, it is possible to use -N to say >= N
+	Cmd Command
+	// number of arguments, it is possible to use -N to say >= N
+	Arity int
+	Flag  CmdFlag
 	Stats CmdStats
 }
 
@@ -57,10 +65,15 @@ func (cs *CmdStats) GetUsecPerCall() float64 {
 // Command is a modis command implementation
 type Command func(ctx *CmdContext) error
 
+var (
+	secondLevelCmd = []string{"client"}
+)
+
 // NewCmdContext create a new command context
 func NewCmdContext(name string, args [][]byte, traceID string, codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *CmdContext {
 	return &CmdContext{
-		Name:       strings.ToLower(name),
+		Name:       name,
+		FullName:   strings.ToLower(name),
 		Args:       args,
 		OutContent: "",
 		TraceID:    traceID,
@@ -68,37 +81,4 @@ func NewCmdContext(name string, args [][]byte, traceID string, codecCtx *conncon
 		ServCtx:    servCtx,
 		Context:    context.Background(),
 	}
-}
-
-// Call a command
-func Call(ctx *CmdContext) {
-	if ctx.Name != "auth" &&
-		ctx.ServCtx.Password != "" &&
-		!ctx.CodecCtx.Authenticated {
-		ctx.OutContent = resp.ResponsesNoautherr
-		return
-	}
-
-	cmdInfo, ok := commands[ctx.Name]
-	if !ok {
-		ctx.OutContent = resp.ErrUnKnownCommand(ctx.Name)
-		return
-	}
-	argc := len(ctx.Args) + 1 // include the command name
-	arity := cmdInfo.Arity
-
-	if (arity > 0 && argc != arity) ||
-		(arity < 0 && argc < -arity) {
-		ctx.OutContent = resp.ErrWrongArgs(ctx.Name)
-		return
-	}
-	st := time.Now()
-	err := cmdInfo.Cmd(ctx)
-	if err != nil {
-		log.Warn("command", ctx.TraceID, "fail to exec command", log.Errors(err))
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	}
-	dur := time.Since(st)
-	cmdInfo.Stats.Calls++
-	cmdInfo.Stats.MicroSec += dur.Microseconds()
 }

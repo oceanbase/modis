@@ -17,8 +17,13 @@
 package command
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
+	"github.com/oceanbase/modis/connection/conncontext"
+	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/modis/storage"
 	"github.com/oceanbase/modis/util"
@@ -27,6 +32,7 @@ import (
 // Auth verifies the client
 func Auth(ctx *CmdContext) error {
 	if ctx.ServCtx.Password == "" {
+		replaceWithRedacted(ctx.Args[0])
 		ctx.OutContent =
 			resp.EncError("ERR AUTH <password> called without any password configured. Are you sure your configuration is correct?")
 		return nil
@@ -36,12 +42,11 @@ func Auth(ctx *CmdContext) error {
 	if password != ctx.ServCtx.Password {
 		ctx.OutContent =
 			resp.EncError("WRONGPASS invalid password.")
-		return nil
+	} else {
+		ctx.OutContent = resp.ResponsesOk
+		ctx.CodecCtx.Authenticated = true
 	}
-
-	ctx.OutContent = resp.ResponsesOk
-	ctx.CodecCtx.Authenticated = true
-
+	replaceWithRedacted(ctx.Args[0])
 	return nil
 }
 
@@ -55,7 +60,7 @@ func Echo(ctx *CmdContext) error {
 func Ping(ctx *CmdContext) error {
 	argc := len(ctx.Args)
 	if argc > 2 {
-		ctx.OutContent = resp.ErrWrongArgs(ctx.Name)
+		ctx.OutContent = resp.ErrWrongArgs(ctx.FullName)
 	} else if argc > 0 {
 		ctx.OutContent = resp.EncBulkString(util.BytesToString(ctx.Args[0]))
 	} else {
@@ -131,5 +136,128 @@ func SwapDB(ctx *CmdContext) error {
 	*db1 = *db2
 	*db2 = tmpDB
 	ctx.OutContent = resp.ResponsesOk
+	return nil
+}
+
+func ClientHelp(ctx *CmdContext) error {
+	out := [][]byte{
+		[]byte("INFO"),
+		[]byte("    Return information about the current client connection."),
+		[]byte("LIST"),
+		[]byte("    Return information about client connections."),
+		[]byte("HELP"),
+		[]byte("    Print this help."),
+	}
+	ctx.OutContent = resp.EncArray(out)
+	return nil
+}
+
+func getClientInfo(infoBuilder *strings.Builder, cliCtx *conncontext.CodecContext) error {
+	unixTime := time.Now().Unix()
+	flag := clientFlag2Str(cliCtx.Flag)
+	queNum := cliCtx.QueNum.Load()
+	_, err := infoBuilder.WriteString(fmt.Sprintf(
+		"id=%d addr=%s laddr=%s fd=%d name=%s age=%d idle=%d flags=%s db=%d sub=%d psub=%d "+
+			"ssub=%d multi=%d qbuf=%d qbuf-free=%d argv-mem=%d multi-mem=%d rbs=%d rbp=%d obl=%d "+
+			"oll=%d omem=%d tot-mem=%d events=%s cmd=%s user=%s redir=%d resp=%d lib-name=%s lib-ver=%s\r\n",
+		cliCtx.ID,
+		cliCtx.Conn.RemoteAddr().String(),
+		cliCtx.Conn.LocalAddr().String(),
+		cliCtx.Fd,
+		cliCtx.Name,
+		unixTime-cliCtx.StartTime.Unix(),
+		unixTime-cliCtx.LastCmdTime.Unix(),
+		flag,
+		cliCtx.DB.ID,
+		0,
+		0,
+		0,
+		-1,
+		queNum,
+		cliCtx.QueLimit-queNum,
+		cliCtx.LastArgvLen,
+		0,
+		0,  // TODO: rbs
+		0,  // TODO: rbp
+		0,  // TODO: obl
+		0,  // TODO: oll
+		0,  // TODO: omem
+		0,  // TODO: tot-mem
+		"", // TODO: events
+		cliCtx.LastCmd,
+		"(superuser)",
+		-1,
+		cliCtx.RespVer,
+		"",
+		"",
+	))
+	return err
+}
+
+func ClientInfo(ctx *CmdContext) error {
+	var infoBuilder strings.Builder
+	err := getClientInfo(&infoBuilder, ctx.CodecCtx)
+	if err != nil {
+		log.Warn("command", ctx.TraceID, "fail to get client info", log.Errors(err))
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	} else {
+		ctx.OutContent = resp.EncBulkString(infoBuilder.String())
+	}
+	return nil
+}
+
+func ClientList(ctx *CmdContext) error {
+	argc := len(ctx.Args)
+	args := ctx.Args[1:] // without ctx.Args[0] = list
+	var cliType conncontext.ClientType
+	if argc == 3 && strings.EqualFold(util.BytesToString(args[0]), "type") {
+		cliType = conncontext.GetClientTypeByName(util.BytesToString(args[1]))
+		if cliType == conncontext.ClientTypeMax {
+			ctx.OutContent = resp.EncError("Unknown client type: " + util.BytesToString(args[1]))
+		}
+	} else if argc > 2 && strings.EqualFold(util.BytesToString(args[0]), "id") {
+		var infoBuilder strings.Builder
+		var err error
+		var id int
+		for _, arg := range args[1:] {
+			id, err = strconv.Atoi(util.BytesToString(arg))
+			if err != nil {
+				ctx.OutContent = resp.EncError("Invalid client id: " + util.BytesToString(arg))
+				return nil
+			}
+			if cliCtx, ok := ctx.ServCtx.Clients[int64(id)]; ok {
+				err = getClientInfo(&infoBuilder, cliCtx)
+				if err != nil {
+					log.Warn("command", ctx.TraceID, "fail to get client info", log.Errors(err))
+					break
+				}
+			}
+		}
+
+		if err != nil {
+			ctx.OutContent = resp.EncError("ERR " + err.Error())
+		} else {
+			ctx.OutContent = resp.EncBulkString(infoBuilder.String())
+		}
+	} else if argc != 1 {
+		ctx.OutContent = resp.ResponseSyntaxErr
+	} else {
+		var infoBuilder strings.Builder
+		var err error
+		for _, cliCtx := range ctx.ServCtx.Clients {
+			err = getClientInfo(&infoBuilder, cliCtx)
+			if err != nil {
+				log.Warn("command", ctx.TraceID, "fail to get client info", log.Errors(err))
+				break
+			}
+		}
+
+		if err != nil {
+			ctx.OutContent = resp.EncError("ERR " + err.Error())
+		} else {
+			ctx.OutContent = resp.EncBulkString(infoBuilder.String())
+		}
+	}
+
 	return nil
 }

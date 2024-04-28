@@ -17,10 +17,8 @@
 package conncontext
 
 import (
-	"bufio"
 	"encoding/hex"
 	"errors"
-	"io"
 	"net"
 	"os"
 	"path/filepath"
@@ -49,10 +47,6 @@ const (
 	SupervisedUpstart                       // 3
 )
 
-const (
-	runIDLength = 40
-)
-
 // ServerContext connect server and clients
 type ServerContext struct {
 	Storage         storage.Storage
@@ -70,7 +64,10 @@ type ServerContext struct {
 	TotalClientNum  int64
 	RejectClientNum int64
 	Backend         string
-	Clients         map[int64]*CodecContext
+	// [cliend id, CodecContext], record all clients
+	Clients map[int64]*CodecContext
+	// [cliend id, CodecContext], record clients with monitor
+	Monitors map[int64]*CodecContext
 
 	// atomic, include all clients
 	TotalCmdNum     *metrics.Metrics
@@ -81,32 +78,6 @@ type ServerContext struct {
 	ClientsPeakMemOutput int64
 }
 
-// CodecContext completes interface of OBKV RPC Server
-type CodecContext struct {
-	Conn          net.Conn
-	ID            int64
-	DB            *storage.DB
-	StartTime     time.Time
-	CloseChan     chan struct{}
-	Authenticated bool
-	Reader        *bufio.Reader
-	TotalBytes    *int64
-	ArgvLen       int64
-	ArgvMem       int64
-}
-
-// ReadCounter record totoal bytes read from reader
-type ReadCounter struct {
-	reader     io.Reader
-	TotalBytes int64
-}
-
-func (rc *ReadCounter) Read(p []byte) (int, error) {
-	n, err := rc.reader.Read(p)
-	rc.TotalBytes += int64(n)
-	return n, err
-}
-
 // NewServerContext creates a new client context
 func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*ServerContext, error) {
 	servCfg := &cfg.Server
@@ -115,7 +86,6 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		Password:        servCfg.Password,
 		DbNum:           servCfg.DBNum,
 		dbs:             make([]*storage.DB, 0, servCfg.DBNum),
-		ConfigPath:      cfgPath,
 		ClientNum:       0,
 		MaxClientNum:    servCfg.MaxConnection,
 		TotalClientNum:  0,
@@ -125,11 +95,19 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		TotalWriteBytes: metrics.NewMetrics(),
 		Backend:         cfg.Storage.Backend,
 		Clients:         make(map[int64]*CodecContext),
+		Monitors:        make(map[int64]*CodecContext),
 	}
 
 	// init modis path
 	err := sc.initModisPath()
 	if err != nil {
+		return nil, err
+	}
+
+	// init path
+	sc.ConfigPath, err = filepath.Abs(cfgPath)
+	if err != nil {
+		log.Warn("server", nil, "fail to init config path", log.Errors(err), log.String("config path", cfgPath))
 		return nil, err
 	}
 
@@ -161,15 +139,6 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		return nil, err
 	}
 	return sc, nil
-}
-
-// NewCodecCtx creates a new client context
-func NewCodecCtx(conn net.Conn, id int64, db *storage.DB) *CodecContext {
-	cc := &CodecContext{Conn: conn, ID: id, DB: db, CloseChan: make(chan struct{})}
-	rc := &ReadCounter{reader: conn}
-	cc.TotalBytes = &rc.TotalBytes
-	cc.Reader = bufio.NewReader(rc)
-	return cc
 }
 
 // GetDB prevents visit db out of range
@@ -259,12 +228,11 @@ func (sc *ServerContext) StartMetricsTicker() {
 				threshold = len(sc.Clients) / threshold
 			}
 			var peekInput int64 = 0
-			// var peekOutput int64 = 0
 			for i, cliCtx := range sc.Clients {
 				if i >= int64(threshold) {
 					break
 				}
-				input := int64(cliCtx.Reader.Size()) + cliCtx.ArgvLen + cliCtx.ArgvMem
+				input := int64(cliCtx.Reader.Size()) + cliCtx.TotalArgvLen
 				if input > peekInput {
 					peekInput = input
 				}

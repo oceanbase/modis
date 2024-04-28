@@ -42,7 +42,6 @@ type RedisCodec struct {
 // NewRedisCodec creates a new client
 func NewRedisCodec(codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *RedisCodec {
 	client := &RedisCodec{CodecCtx: codecCtx, ServCtx: servCtx}
-	client.CodecCtx.StartTime = time.Now()
 	return client
 }
 
@@ -90,12 +89,14 @@ func (rs *RedisCodec) WriteResponse(resp *obkvrpc.Response) error {
 
 // Call implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
+	rs.CodecCtx.LastCmdTime = time.Now()
 	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, rs.CodecCtx, rs.ServCtx)
 	command.Call(ctx)
 
 	resp.ID = ctx.TraceID
 	resp.RspContent = []byte(ctx.OutContent)
 	rs.ServCtx.TotalCmdNum.Inc(1)
+	rs.CodecCtx.QueNum.Add(-1)
 	return nil
 }
 
@@ -109,6 +110,7 @@ func (rs *RedisCodec) Close() {
 			log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()))
 	}
 	rs.ServCtx.ClientNum--
+	delete(rs.ServCtx.Clients, rs.CodecCtx.ID)
 }
 
 func (rs *RedisCodec) readCommand() ([][]byte, error) {
@@ -139,6 +141,7 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 	if argc == 0 {
 		return [][]byte{}, nil
 	}
+	rs.CodecCtx.LastArgvLen = 0
 	argv := make([][]byte, argc)
 	for i := 0; i < argc; i++ {
 		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader)
@@ -147,8 +150,11 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 			return nil, err
 		}
 		argv[i] = arg
+		rs.CodecCtx.LastArgvLen += int64(len(arg))
 		log.Debug("server", nil, "read command", log.Int("arg idx", i), log.String("val", string(arg)))
 	}
+	rs.CodecCtx.TotalArgvLen = rs.CodecCtx.LastArgvLen
 	rs.ServCtx.TotalReadBytes.Inc((*rs.CodecCtx.TotalBytes) - lastReadBytes)
+	rs.CodecCtx.QueNum.Add(1)
 	return argv, nil
 }

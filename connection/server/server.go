@@ -130,7 +130,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		s.ServCtx.ClientNum++
 		s.ServCtx.TotalClientNum++
 		cliID := s.IDGenerator()
-		cliCtx := conncontext.NewCodecCtx(conn, cliID, db)
+		cliCtx := conncontext.NewCodecCtx(conn, cliID, db, maxQueueCmd)
 		s.ServCtx.Clients[cliID] = cliCtx
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
 		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)

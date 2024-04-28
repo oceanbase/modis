@@ -7,14 +7,14 @@ const (
 )
 
 type Metrics struct {
-	lastSample int64
-	curSample  int64
+	lastSample *atomic.Int64
+	curSample  *atomic.Int64
 	intervals  [metricsSamples]int64
 	index      uint64
 }
 
 func NewMetrics() *Metrics {
-	return &Metrics{lastSample: 0, curSample: 0, index: 0}
+	return &Metrics{lastSample: new(atomic.Int64), curSample: new(atomic.Int64), index: 0}
 }
 
 func (m *Metrics) GetAvg() float64 {
@@ -27,17 +27,17 @@ func (m *Metrics) GetAvg() float64 {
 }
 
 func (m *Metrics) Inc(delta int64) {
-	atomic.AddInt64(&m.curSample, delta)
+	m.curSample.Add(delta)
 }
 
 func (m *Metrics) Observe() {
-	cur := atomic.LoadInt64(&m.curSample)
-	last := atomic.LoadInt64(&m.lastSample)
-	atomic.StoreInt64(&m.lastSample, cur)
+	cur := m.curSample.Load()
+	last := m.lastSample.Load()
+	m.lastSample.Store(cur)
 	atomic.StoreInt64(&m.intervals[m.index%metricsSamples], cur-last)
 	atomic.AddUint64(&m.index, 1)
 }
 
 func (m *Metrics) GetSample() int64 {
-	return atomic.LoadInt64(&m.curSample)
+	return m.curSample.Load()
 }

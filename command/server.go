@@ -27,7 +27,6 @@ import (
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/protocol/resp"
-	"github.com/oceanbase/modis/storage/obkv"
 	"github.com/oceanbase/modis/util"
 )
 
@@ -51,23 +50,6 @@ const (
 type DBInfo struct {
 	Keys    int64
 	Expires int64
-}
-
-func getDBInfo(ctx *CmdContext, db int64) (*DBInfo, error) {
-	var tbInfo *obkv.TableInfo
-	var err error
-	dbInfo := &DBInfo{Keys: 0, Expires: 0}
-	for _, tbName := range tables {
-		tbInfo, err = ctx.CodecCtx.DB.Storage.GetTableInfo(ctx.CodecCtx.DB.Ctx, db, tbName)
-		if err != nil {
-			log.Warn("command", ctx.TraceID, "fail to get table info",
-				log.Errors(err), log.Int64("db", db), log.String("table name", tbName))
-			return nil, err
-		}
-		dbInfo.Keys += tbInfo.Keys
-		dbInfo.Expires += tbInfo.Expires
-	}
-	return dbInfo, nil
 }
 
 func formatDBInfo(ctx *CmdContext, infoBuilder *strings.Builder) error {
@@ -110,7 +92,7 @@ func Info(ctx *CmdContext) error {
 	} else {
 		for _, argv := range ctx.Args {
 			curArg := strings.ToLower(util.BytesToString(argv))
-			if curArg == "default" {
+			if strings.EqualFold("default", curArg) {
 				useDefault = true
 				break
 			}
@@ -136,9 +118,15 @@ func Info(ctx *CmdContext) error {
 	var infoBuilder strings.Builder
 	var err error
 	curTime := time.Now().Unix()
+	idx := -1
 	for section := range sections {
 		switch section {
 		case "server":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			upTime := curTime - ctx.ServCtx.StartTime.Unix()
 			_, err = infoBuilder.WriteString(fmt.Sprintf(
 				"# Server\r\n"+
@@ -153,8 +141,7 @@ func Info(ctx *CmdContext) error {
 					"tcp_port:%d\r\n"+
 					"uptime_in_seconds:%d\r\n"+
 					"executable:%s\r\n"+
-					"config_file:%s\r\n"+
-					"\r\n",
+					"config_file:%s\r\n",
 				ModisVer,
 				GitSha1,
 				GitDirty,
@@ -169,26 +156,39 @@ func Info(ctx *CmdContext) error {
 				ctx.ServCtx.ConfigPath,
 			))
 		case "clients":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			_, err = infoBuilder.WriteString(fmt.Sprintf(
 				"# Clients\r\n"+
 					"connected_clients:%d\r\n"+
 					"maxclients:%d\r\n"+
 					"client_recent_max_input_buffer:%d\r\n"+
-					"client_recent_max_output_buffer:%d\r\n"+
-					"\r\n",
+					"client_recent_max_output_buffer:%d\r\n",
 				ctx.ServCtx.ClientNum,
 				ctx.ServCtx.MaxClientNum,
 				ctx.ServCtx.ClientsPeakMemInput,
 				ctx.ServCtx.ClientsPeakMemOutput,
 			))
 		case "persistence":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			_, err = infoBuilder.WriteString(fmt.Sprintf(
 				"# Persistence\r\n"+
-					"backend:%s\r\n"+
-					"\r\n",
+					"backend:%s\r\n",
 				ctx.ServCtx.Backend,
 			))
 		case "stats":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			_, err = infoBuilder.WriteString(fmt.Sprintf(
 				"# Stats\r\n"+
 					"total_connections_received:%d\r\n"+
@@ -198,8 +198,7 @@ func Info(ctx *CmdContext) error {
 					"total_net_output_bytes:%d\r\n"+
 					"instantaneous_input_kbps:%.2f\r\n"+
 					"instantaneous_output_kbps:%.2f\r\n"+
-					"rejected_connections:%d\r\n"+
-					"\r\n",
+					"rejected_connections:%d\r\n",
 				ctx.ServCtx.TotalClientNum,
 				ctx.ServCtx.TotalCmdNum.GetSample(),
 				ctx.ServCtx.TotalCmdNum.GetAvg(),
@@ -210,6 +209,11 @@ func Info(ctx *CmdContext) error {
 				ctx.ServCtx.RejectClientNum,
 			))
 		case "cpu":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			self_rusage := new(syscall.Rusage)
 			child_rusage := new(syscall.Rusage)
 			err = syscall.Getrusage(syscall.RUSAGE_SELF, self_rusage)
@@ -226,8 +230,8 @@ func Info(ctx *CmdContext) error {
 				"# CPU\r\n"+
 					"used_cpu_sys:%d.%06d\r\n"+
 					"used_cpu_user:%d.%06d\r\n"+
-					"used_cpu_sys:%d.%06d\r\n"+
-					"used_cpu_user:%d.%06d\r\n"+
+					"used_cpu_sys_children:%d.%06d\r\n"+
+					"used_cpu_user_children:%d.%06d\r\n"+
 					"\r\n",
 				self_rusage.Stime.Sec, self_rusage.Stime.Usec,
 				self_rusage.Utime.Sec, self_rusage.Utime.Usec,
@@ -235,26 +239,42 @@ func Info(ctx *CmdContext) error {
 				child_rusage.Utime.Sec, child_rusage.Utime.Usec,
 			))
 		case "commandstats":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			_, err = infoBuilder.WriteString("# Commandstats\r\n")
 			if err != nil {
 				log.Warn("command", ctx.TraceID, "fail to write string to infoBuilder", log.Errors(err))
 				break
 			}
 			for cmdName, v := range commands {
-				_, err = infoBuilder.WriteString(fmt.Sprintf(
-					"cmdstat_%s:calls=%d,usec=%d,usec_per_call=%.2f\r\n"+
-						"\r\n",
-					cmdName, v.Stats.Calls, v.Stats.MicroSec, v.Stats.GetUsecPerCall(),
-				))
+				if v.Stats.Calls > 0 {
+					_, err = infoBuilder.WriteString(fmt.Sprintf(
+						"cmdstat_%s:calls=%d,usec=%d,usec_per_call=%.2f\r\n"+
+							"\r\n",
+						cmdName, v.Stats.Calls, v.Stats.MicroSec, v.Stats.GetUsecPerCall(),
+					))
+				}
 			}
 		case "cluster":
+			if idx++; idx > 0 {
+				if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+					break
+				}
+			}
 			_, err = infoBuilder.WriteString(
 				"# Cluster\r\n" +
-					"cluster_enabled:0\r\n" + // no cluster currenctly
-					"\r\n",
+					"cluster_enabled:0\r\n", // no cluster currenctly
 			)
 			// TODO: keyspace
 			// case "keyspace":
+			// 	if idx++; idx > 0 {
+			// 		if _, err = infoBuilder.WriteString("\r\n"); err != nil {
+			// 			break
+			// 		}
+			// 	}
 			// 	_, err = infoBuilder.WriteString("# Keyspace\r\n")
 			// 	if err != nil {
 			// 		log.Warn("command", ctx.TraceID, "fail to write string to infoBuilder", log.Errors(err))
@@ -263,11 +283,6 @@ func Info(ctx *CmdContext) error {
 			// 	err = formatDBInfo(ctx, &infoBuilder)
 			// 	if err != nil {
 			// 		log.Warn("command", ctx.TraceID, "fail to format db info", log.Errors(err))
-			// 		break
-			// 	}
-			// 	_, err = infoBuilder.WriteString("\r\n")
-			// 	if err != nil {
-			// 		log.Warn("command", ctx.TraceID, "fail to write string to infoBuilder", log.Errors(err))
 			// 		break
 			// 	}
 		}
@@ -281,5 +296,12 @@ func Info(ctx *CmdContext) error {
 	} else {
 		ctx.OutContent = resp.EncBulkString(infoBuilder.String())
 	}
+	return nil
+}
+
+func Monitor(ctx *CmdContext) error {
+	ctx.ServCtx.Monitors[ctx.CodecCtx.ID] = ctx.CodecCtx
+	ctx.CodecCtx.Flag |= conncontext.ClientMonitor
+	ctx.OutContent = resp.ResponsesOk
 	return nil
 }
