@@ -1,0 +1,32 @@
+##########################################################
+#            OBFlow Secret Scan Ignore List              #
+##########################################################
+# Above the segmentation lines there are suspected privacy information #
+# Please use the file name as the first line and the igored information #
+# should be started with tab. #
+# Under the segmentation lines there are the folders which you need to ignore #
+##########################################################
+# Filtered path must begin with '**' to match the absolute path of the source code root directory.
+**
+  http://license.coscl.org.cn/MulanPSL2
+  https://en.wikipedia.org/wiki/Contributor_License_Agreement
+  https://github.com/
+  https://github.com/oceanbase/obkv-table-client-go
+  https://ask.oceanbase.com/t/topic/35601923
+  https://github.com/oceanbase/modis/issues
+  https://open.oceanbase.com
+  https://facebook.github.io/watchman/
+--------------------------------------------------------
+# Should use GLOB wildcard to config and analysis the ignored folder
+# The root patch should start with '/'
+/.git/**
+/NOTICE
+/README.md
+/CODE_OF_CONDUCT.md
+/CONTRIBUTING.md
+--------------------------------------------------------
+# Config the ignored fold to escape the Chinese scan by GLOB wildcard
+--------------------------------------------------------
+# Set md5 of pemFile string to filter
+# This section must be end up with '--------------------------------------------------------'!!!
+--------------------------------------------------------
