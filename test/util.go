@@ -46,7 +46,7 @@ const (
 	SqlUser     = "root@mysql"
 	SqlPassWord = ""
 	SqlIp       = "127.0.0.1"
-	SqlPort     = ""
+	SqlPort     = "20903"
 	SqlDatabase = "test"
 )
 
