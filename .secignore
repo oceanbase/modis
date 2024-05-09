@@ -8,7 +8,7 @@
 ##########################################################
 # Filtered path must begin with '**' to match the absolute path of the source code root directory.
 **
-  http://license.coscl.org.cn/MulanPSL2
+  http://www.apache.org/licenses/LICENSE-2.0
   https://en.wikipedia.org/wiki/Contributor_License_Agreement
   https://github.com/
   https://github.com/oceanbase/obkv-table-client-go

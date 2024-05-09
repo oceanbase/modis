@@ -112,7 +112,7 @@ create table modis_zset_table(
 
 ## Licencing
 
-modis is under [MulanPSL - 2.0](http://license.coscl.org.cn/MulanPSL2) licence. You can freely copy and use the source code. When you modify or distribute the source code, please obey the MulanPSL - 2.0 licence.
+Modis is under [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0) licence. For details, see the [LICENSE](LICENSE) file.
 
 ## Contributing
 

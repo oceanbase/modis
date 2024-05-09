@@ -3,3 +3,5 @@ cmd/modis/modis
 *.log
 /*.yaml
 !/.github./
+core-*
+*.patch

@@ -5,7 +5,6 @@ go 1.20
 require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-sql-driver/mysql v1.7.0
 	github.com/google/uuid v1.6.0
 	github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240428032443-6ee9e53bbb48
 	github.com/spf13/viper v1.18.2
@@ -15,6 +14,7 @@ require (
 )
 
 require (
+	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/panjf2000/ants/v2 v2.9.1 // indirect
