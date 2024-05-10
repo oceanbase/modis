@@ -71,7 +71,6 @@ type Storage interface {
 	SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
 	SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
 	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
-	SDiff(ctx context.Context, db int64, key []byte, plainText []byte) (string, error)
 
 	// zset commands
 	ZAdd(ctx context.Context, db int64, key []byte, memberScore map[string]int64) (int, error)
@@ -81,6 +80,9 @@ type Storage interface {
 
 	// server commands
 	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
+
+	// general interface for commands that can be executed on the observer side
+	ObServerCmd(ctx context.Context, db int64, key []byte, plainText []byte) (string, error)
 
 	Close() error
 }

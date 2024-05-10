@@ -70,19 +70,19 @@ func (s *Storage) HSet(ctx context.Context, db int64, key []byte, fieldValue map
 		batchExecutor.AddInsertOrUpdateOp(rowKey, mutates)
 	}
 
-	// // Execute
-	// res, err := batchExecutor.Execute(ctx)
-	// if err != nil {
-	// 	return -1, err
-	// }
+	// Execute
+	res, err := batchExecutor.Execute(ctx)
+	if err != nil {
+		return -1, err
+	}
 
 	// Static insert size
 	insertSize := 0
-	// for _, singleResult := range res.GetResults() {
-	// 	if !singleResult.IsInsertOrUpdateDoUpdate() {
-	// 		insertSize++
-	// 	}
-	// }
+	for _, singleResult := range res.GetResults() {
+		if !singleResult.IsInsertOrUpdateDoUpdate() {
+			insertSize++
+		}
+	}
 
 	return insertSize, nil
 }

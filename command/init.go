@@ -77,7 +77,7 @@ func init() {
 
 		// hashes
 		"hdel":         {Cmd: HDel, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"hset":         {Cmd: TempNotSupport, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"hset":         {Cmd: HSet, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"hget":         {Cmd: HGet, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"hgetall":      {Cmd: HGetAll, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"hexists":      {Cmd: HExists, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},

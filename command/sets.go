@@ -295,10 +295,9 @@ func SDiffServer(ctx *CmdContext) error {
 	// 1. Get first key members
 	firstKey := ctx.Args[0]
 	var err error
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.SDiff(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, firstKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, firstKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-		return nil
 	}
 	return nil
 }

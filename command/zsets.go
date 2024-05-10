@@ -26,39 +26,11 @@ import (
 
 // ZAdd adds the specified members with scores to the sorted set
 func ZAdd(ctx *CmdContext) error {
-	key := []byte(ctx.Args[0])
-
-	kvs := ctx.Args[1:]
-	if len(kvs)%2 != 0 {
-		ctx.OutContent = resp.EncError("ERR syntax error")
-		return nil
-	}
-
-	uniqueMembers := make(map[string]bool)
-
-	memberScore := make(map[string]int64)
-
-	// 倒序，因为后面填的参数会覆盖前面
-	for i := len(kvs) - 1; i >= 0; i -= 2 {
-		member := kvs[i]
-		if _, ok := uniqueMembers[util.BytesToString(member)]; ok {
-			continue
-		}
-
-		score, err := strconv.ParseInt(util.BytesToString(kvs[i-1]), 10, 64)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR syntax error")
-			return nil
-		}
-
-		memberScore[util.BytesToString(member)] = score
-		uniqueMembers[util.BytesToString(member)] = true
-	}
-	returnValue, err := ctx.CodecCtx.DB.Storage.ZAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, memberScore)
+	key := ctx.Args[0]
+	var err error
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(returnValue))
 	}
 	return nil
 }

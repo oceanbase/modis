@@ -17,9 +17,13 @@
 package obkv
 
 import (
+	"context"
 	"errors"
 	"math/rand"
 	"time"
+
+	"github.com/oceanbase/obkv-table-client-go/client/option"
+	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
 func setBit(bytes []byte, n int, value byte) (byte, error) {
@@ -65,4 +69,36 @@ func getRandomArray(min int, max int, count int) []int {
 		arr = append(arr, permArr[i])
 	}
 	return arr
+}
+
+// ObServerCmd is a general interface for commands that can be executed on the observer side
+func (s *Storage) ObServerCmd(ctx context.Context, db int64, key []byte, plainText []byte) (string, error) {
+	tableName := setTableName
+
+	// Prepare key range
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, db),
+		table.NewColumn(keyColumnName, key),
+	}
+	mutateColumns := []*table.Column{
+		table.NewColumn("REDIS_CODE_STR", plainText),
+	}
+
+	// Create query
+	result, err := s.cli.Redis(
+		ctx,
+		tableName,
+		rowKey,
+		mutateColumns,
+		option.WithReturnAffectedEntity(true),
+	)
+	if err != nil {
+		return "", err
+	}
+	encodedRes, ok := result.Value("REDIS_CODE_STR").(string)
+	if !ok {
+		err = errors.New("result returned by obkv client is not string type")
+		return "", err
+	}
+	return encodedRes, nil
 }
