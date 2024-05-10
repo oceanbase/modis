@@ -290,6 +290,19 @@ func SDiff(ctx *CmdContext) error {
 	return nil
 }
 
+// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
+func SDiffServer(ctx *CmdContext) error {
+	// 1. Get first key members
+	firstKey := ctx.Args[0]
+	var err error
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.SDiff(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, firstKey, ctx.PlainReq)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		return nil
+	}
+	return nil
+}
+
 // SDiffStore stores the difference set between the given sets in the specified set.
 func SDiffStore(ctx *CmdContext) error {
 	dstKey := ctx.Args[0]

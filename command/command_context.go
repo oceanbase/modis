@@ -30,8 +30,10 @@ type CmdContext struct {
 	Args       [][]byte // command's args，e.g. ["key", "value"]
 	OutContent string   // command's output
 	TraceID    string
-	CodecCtx   *conncontext.CodecContext
-	ServCtx    *conncontext.ServerContext
+	// request without decoding, e.g. *2\r\n$3\r\nGET\r\n$3\r\nkey\r\n
+	PlainReq []byte
+	CodecCtx *conncontext.CodecContext
+	ServCtx  *conncontext.ServerContext
 	context.Context
 }
 
@@ -70,13 +72,15 @@ var (
 )
 
 // NewCmdContext create a new command context
-func NewCmdContext(name string, args [][]byte, traceID string, codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *CmdContext {
+func NewCmdContext(name string, args [][]byte, traceID string, plainReq []byte,
+	codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *CmdContext {
 	return &CmdContext{
 		Name:       name,
 		FullName:   strings.ToLower(name),
 		Args:       args,
 		OutContent: "",
 		TraceID:    traceID,
+		PlainReq:   plainReq,
 		CodecCtx:   codecCtx,
 		ServCtx:    servCtx,
 		Context:    context.Background(),

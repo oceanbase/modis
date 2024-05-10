@@ -16,6 +16,7 @@ require (
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/panjf2000/ants/v2 v2.9.1 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
@@ -35,7 +36,6 @@ require (
 	github.com/facebookgo/grace v0.0.0-20180706040059-75cf19382434
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
-	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/naoina/go-stringutil v0.1.0 // indirect

@@ -71,6 +71,7 @@ type Storage interface {
 	SPop(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
 	SRandMember(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
 	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
+	SDiff(ctx context.Context, db int64, key []byte, plainText []byte) (string, error)
 
 	// zset commands
 	ZAdd(ctx context.Context, db int64, key []byte, memberScore map[string]int64) (int, error)

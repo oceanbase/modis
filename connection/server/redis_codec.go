@@ -51,7 +51,7 @@ func (rs *RedisCodec) GetCloseChan() *chan struct{} {
 
 // ReadRequest implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) ReadRequest(req *obkvrpc.Request) error {
-	args, err := rs.readCommand()
+	args, err := rs.readCommand(&req.PlainReq)
 	if err != nil {
 		log.Warn("server", req.ID, "fail to read command", log.Errors(err))
 		return err
@@ -90,7 +90,7 @@ func (rs *RedisCodec) WriteResponse(resp *obkvrpc.Response) error {
 // Call implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 	rs.CodecCtx.LastCmdTime = time.Now()
-	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, rs.CodecCtx, rs.ServCtx)
+	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, req.PlainReq, rs.CodecCtx, rs.ServCtx)
 	command.Call(ctx)
 
 	resp.ID = ctx.TraceID
@@ -113,9 +113,10 @@ func (rs *RedisCodec) Close() {
 	delete(rs.ServCtx.Clients, rs.CodecCtx.ID)
 }
 
-func (rs *RedisCodec) readCommand() ([][]byte, error) {
+func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
 	lastReadBytes := *rs.CodecCtx.TotalBytes
 	buf, err := rs.CodecCtx.Reader.ReadBytes('\n')
+	*plainReq = append(*plainReq, buf...)
 	if err != nil {
 		log.Warn("server", nil, "fail to read bytes", log.Errors(err))
 		return nil, err
@@ -144,7 +145,7 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 	rs.CodecCtx.LastArgvLen = 0
 	argv := make([][]byte, argc)
 	for i := 0; i < argc; i++ {
-		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader)
+		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader, plainReq)
 		if err != nil {
 			log.Warn("server", nil, "fail to read bulk string", log.Errors(err))
 			return nil, err
@@ -153,7 +154,7 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 		rs.CodecCtx.LastArgvLen += int64(len(arg))
 		log.Debug("server", nil, "read command", log.Int("arg idx", i), log.String("val", string(arg)))
 	}
-	rs.CodecCtx.TotalArgvLen = rs.CodecCtx.LastArgvLen
+	rs.CodecCtx.TotalArgvLen += rs.CodecCtx.LastArgvLen
 	rs.ServCtx.TotalReadBytes.Inc((*rs.CodecCtx.TotalBytes) - lastReadBytes)
 	rs.CodecCtx.QueNum.Add(1)
 	return argv, nil

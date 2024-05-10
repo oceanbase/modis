@@ -92,7 +92,7 @@ func init() {
 
 		// sets
 		"sadd":        {Cmd: SAdd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"smembers":    {Cmd: TempNotSupport, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"smembers":    {Cmd: SMembers, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"srandmember": {Cmd: SRandMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"scard":       {Cmd: SCard, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sismember":   {Cmd: SIsmember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
@@ -100,9 +100,9 @@ func init() {
 		"srem":        {Cmd: SRem, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sunion":      {Cmd: SUnion, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sunionstore": {Cmd: SUnionStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sinter":      {Cmd: TempNotSupport, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sinter":      {Cmd: SInter, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sinterstore": {Cmd: SInterStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sdiff":       {Cmd: TempNotSupport, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sdiff":       {Cmd: SDiffServer, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sdiffstore":  {Cmd: SDiffStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"smove":       {Cmd: SMove, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 

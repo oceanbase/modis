@@ -535,3 +535,35 @@ func (s *Storage) ttlSet(ctx context.Context, db int64, key []byte) (time.Durati
 	sub := expire.(time.Time).Sub(time.Now())
 	return sub, nil
 }
+
+// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
+func (s *Storage) SDiff(ctx context.Context, db int64, key []byte, plainText []byte) (string, error) {
+	tableName := setTableName
+
+	// Prepare key range
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, db),
+		table.NewColumn(keyColumnName, key),
+	}
+	mutateColumns := []*table.Column{
+		table.NewColumn("REDIS_CODE_STR", plainText),
+	}
+
+	// Create query
+	result, err := s.cli.Redis(
+		ctx,
+		tableName,
+		rowKey,
+		mutateColumns,
+		option.WithReturnAffectedEntity(true),
+	)
+	if err != nil {
+		return "", err
+	}
+	encodedRes, ok := result.Value("REDIS_CODE_STR").(string)
+	if !ok {
+		err = errors.New("result returned by obkv client is not string type")
+		return "", err
+	}
+	return encodedRes, nil
+}
