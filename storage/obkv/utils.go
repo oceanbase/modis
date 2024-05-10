@@ -18,10 +18,8 @@ package obkv
 
 import (
 	"errors"
-)
-
-const (
-	ttlColumnName = "expire_ts"
+	"math/rand"
+	"time"
 )
 
 func setBit(bytes []byte, n int, value byte) (byte, error) {
@@ -56,4 +54,15 @@ func getBit(bytes []byte, offset int) (byte, error) {
 	// 获取指定位的值, 从每个byte的最高有效位开始访问
 	bitValue := (bytes[byteIndex] >> uint(7-bitIndex)) & 1
 	return bitValue, nil
+}
+
+func getRandomArray(min int, max int, count int) []int {
+	randGen := rand.New(rand.NewSource(time.Now().UnixNano()))
+	rangeSize := max - min
+	permArr := randGen.Perm(rangeSize)
+	arr := make([]int, 0, count)
+	for i := 0; i < count; i++ {
+		arr = append(arr, permArr[i])
+	}
+	return arr
 }

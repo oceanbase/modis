@@ -159,3 +159,7 @@ func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
 	rs.CodecCtx.QueNum.Add(1)
 	return argv, nil
 }
+
+func (rs *RedisCodec) GetNormalErrMsg() []byte {
+	return []byte(resp.ErrUnknown())
+}

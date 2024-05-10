@@ -68,8 +68,8 @@ type Storage interface {
 	SIsmember(ctx context.Context, db int64, key []byte, member []byte) (int, error)
 	SMembers(ctx context.Context, db int64, key []byte) ([][]byte, error)
 	Smove(ctx context.Context, db int64, src []byte, dst []byte, member []byte) (int, error)
-	SPop(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
-	SRandMember(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
+	SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
+	SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
 	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
 	SDiff(ctx context.Context, db int64, key []byte, plainText []byte) (string, error)
 

@@ -67,7 +67,7 @@ func SRandMember(ctx *CmdContext) error {
 		}
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, int64(count))
+	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -119,7 +119,7 @@ func SPop(ctx *CmdContext) error {
 		}
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, int64(count))
+	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {

@@ -63,3 +63,7 @@ func ErrOutRange(min int64, max int64) string {
 func ErrOutRangeDefault() string {
 	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", math.MaxInt, math.MinInt)
 }
+
+func ErrUnknown() string {
+	return "-ERR error occurred in obkv go client"
+}
