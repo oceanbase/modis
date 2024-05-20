@@ -163,6 +163,7 @@ func (r *Decoder) BulkString(plainReq *[]byte) ([]byte, error) {
 		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
 		return nil, ErrInvalidProtocol
 	}
-	*plainReq = append(*plainReq, body...)
+	*plainReq = append(*plainReq, body[:len(body)-2]...)
+	*plainReq = append(*plainReq, []byte{'\r', '\n'}...)
 	return body[:len(body)-2], nil
 }

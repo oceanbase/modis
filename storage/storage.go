@@ -22,6 +22,7 @@ import (
 
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/storage/obkv"
+	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
 type Storage interface {
@@ -82,7 +83,7 @@ type Storage interface {
 	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
 
 	// general interface for commands that can be executed on the observer side
-	ObServerCmd(ctx context.Context, db int64, key []byte, plainText []byte) (string, error)
+	ObServerCmd(ctx context.Context, tableName string, rowKey []*table.Column, plainText []byte) (string, error)
 
 	Close() error
 }

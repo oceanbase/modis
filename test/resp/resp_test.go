@@ -65,33 +65,40 @@ func TestSimpleString_Encode(t *testing.T) {
 }
 
 func TestBulkString_Decode(t *testing.T) {
+	var plainReq []byte
 	assert := assert.New(t)
 	d := resp.NewDecoder(bufio.NewReader(bytes.NewBufferString("$4\r\ntest\r\n")))
-	val, err := d.BulkString()
+	val, err := d.BulkString(&plainReq)
 	assert.NoError(err)
 	assert.Equal("test", string(val))
+	assert.Equal("$4\r\ntest\r\n", string(plainReq))
 
 	// Truncated data
+	plainReq = plainReq[:0]
 	d = resp.NewDecoder(bufio.NewReader(bytes.NewBufferString("$3\r\ntest\r\n")))
-	val, err = d.BulkString()
+	val, err = d.BulkString(&plainReq)
 	assert.NoError(err)
 	assert.Equal("tes", string(val))
+	assert.Equal("$3\r\ntes\r\n", string(plainReq))
 
 	// Invalid indicator
+	plainReq = plainReq[:0]
 	d = resp.NewDecoder(bufio.NewReader(bytes.NewBufferString("*4\r\ntest\r\n")))
-	val, err = d.BulkString()
+	val, err = d.BulkString(&plainReq)
 	assert.Error(err)
 	assert.Equal("", string(val))
 
 	// Invalid delimiter
+	plainReq = plainReq[:0]
 	d = resp.NewDecoder(bufio.NewReader(bytes.NewBufferString("*4\rtest\r\n")))
-	val, err = d.BulkString()
+	val, err = d.BulkString(&plainReq)
 	assert.Error(err)
 	assert.Equal("", string(val))
 
 	// Naughty string
+	plainReq = plainReq[:0]
 	d = resp.NewDecoder(bufio.NewReader(bytes.NewBufferString("asdfghjk")))
-	val, err = d.BulkString()
+	val, err = d.BulkString(&plainReq)
 	assert.Error(err)
 	assert.Equal("", string(val))
 }

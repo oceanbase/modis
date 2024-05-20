@@ -24,6 +24,14 @@ import (
 	"github.com/oceanbase/modis/storage/obkv"
 )
 
+const (
+	dbColumnName     = "db"
+	keyColumnName    = "rkey"
+	valueColumnName  = "value"
+	expireColumnName = "expire_ts"
+	memberColumnName = "member"
+)
+
 func bitCount(bytes []byte, start, end int) (int, error) {
 	length := len(bytes)
 	if end < 0 {

@@ -72,14 +72,7 @@ func getRandomArray(min int, max int, count int) []int {
 }
 
 // ObServerCmd is a general interface for commands that can be executed on the observer side
-func (s *Storage) ObServerCmd(ctx context.Context, db int64, key []byte, plainText []byte) (string, error) {
-	tableName := setTableName
-
-	// Prepare key range
-	rowKey := []*table.Column{
-		table.NewColumn(dbColumnName, db),
-		table.NewColumn(keyColumnName, key),
-	}
+func (s *Storage) ObServerCmd(ctx context.Context, tableName string, rowKey []*table.Column, plainText []byte) (string, error) {
 	mutateColumns := []*table.Column{
 		table.NewColumn("REDIS_CODE_STR", plainText),
 	}
