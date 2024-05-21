@@ -25,6 +25,7 @@ const (
 	keyColumnName    = "rkey"
 	valueColumnName  = "value"
 	expireColumnName = "expire_ts"
+	indexColumnName  = "index"
 )
 
 type Storage struct {
