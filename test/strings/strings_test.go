@@ -290,7 +290,7 @@ func TestGetSet(t *testing.T) {
 	assert.EqualValues(t, res, res2)
 }
 
-func TestSetEx(t *testing.T) {
+func TestSetExAndPSetEx(t *testing.T) {
 	defer test.ClearDb(0, redisCli, stringTableName)
 	keyFmt := "key_%d"
 	valueFmt := "value_%d"
@@ -589,100 +589,100 @@ func testAppend(t *testing.T, key string, value string, expectRes string) {
 	assert.EqualValues(t, expectRes, modisGetRes)
 }
 
-// func TestIncr(t *testing.T) {
-// 	defer test.ClearDb(0, redisCli, stringTableName)
-// 	key := "foo"
+func TestIncr(t *testing.T) {
+	defer test.ClearDb(0, redisCli, stringTableName)
+	key := "foo"
 
-// 	// incr first
-// 	redisRes, err := redisCli.Incr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err := modisCli.Incr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
+	// incr first
+	redisRes, err := redisCli.Incr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err := modisCli.Incr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
 
-// 	// incr again
-// 	redisRes, err = redisCli.Incr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err = modisCli.Incr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
-// }
+	// incr again
+	redisRes, err = redisCli.Incr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err = modisCli.Incr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
+}
 
-// func TestIncrBy(t *testing.T) {
-// 	defer test.ClearDb(0, redisCli, stringTableName)
-// 	key := "foo"
-// 	var value int64 = 3010101010102
+func TestIncrBy(t *testing.T) {
+	defer test.ClearDb(0, redisCli, stringTableName)
+	key := "foo"
+	var value int64 = 3010101010102
 
-// 	// incr first
-// 	redisRes, err := redisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err := modisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
+	// incr first
+	redisRes, err := redisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err := modisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
 
-// 	// incr again
-// 	redisRes, err = redisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err = modisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
-// }
+	// incr again
+	redisRes, err = redisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err = modisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
+}
 
-// func TestIncrByFloat(t *testing.T) {
-// 	defer test.ClearDb(0, redisCli, stringTableName)
-// 	key := "foo"
-// 	value := 301.0101010102
+func TestIncrByFloat(t *testing.T) {
+	defer test.ClearDb(0, redisCli, stringTableName)
+	key := "foo"
+	value := 301.0101010102
 
-// 	// incr first
-// 	redisRes, err := redisCli.IncrByFloat(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err := modisCli.IncrByFloat(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
+	// incr first
+	redisRes, err := redisCli.IncrByFloat(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err := modisCli.IncrByFloat(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
 
-// 	// incr again
-// 	redisRes, err = redisCli.IncrByFloat(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err = modisCli.IncrByFloat(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
-// }
+	// incr again
+	redisRes, err = redisCli.IncrByFloat(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err = modisCli.IncrByFloat(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
+}
 
-// func TestDecr(t *testing.T) {
-// 	defer test.ClearDb(0, redisCli, stringTableName)
-// 	key := "foo"
+func TestDecr(t *testing.T) {
+	defer test.ClearDb(0, redisCli, stringTableName)
+	key := "foo"
 
-// 	// decr first
-// 	redisRes, err := redisCli.Decr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err := modisCli.Decr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
+	// decr first
+	redisRes, err := redisCli.Decr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err := modisCli.Decr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
 
-// 	// decr again
-// 	redisRes, err = redisCli.Decr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err = modisCli.Decr(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
-// }
+	// decr again
+	redisRes, err = redisCli.Decr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err = modisCli.Decr(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
+}
 
-// func TestDecrBy(t *testing.T) {
-// 	defer test.ClearDb(0, redisCli, stringTableName)
-// 	key := "foo"
-// 	var value int64 = 3010101010102
+func TestDecrBy(t *testing.T) {
+	defer test.ClearDb(0, redisCli, stringTableName)
+	key := "foo"
+	var value int64 = 3010101010102
 
-// 	// decr first
-// 	redisRes, err := redisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err := modisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
+	// decr first
+	redisRes, err := redisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err := modisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
 
-// 	// decr again
-// 	redisRes, err = redisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	modisRes, err = modisCli.IncrBy(context.TODO(), key, value).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.Equal(t, redisRes, modisRes)
-// }
+	// decr again
+	redisRes, err = redisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	modisRes, err = modisCli.IncrBy(context.TODO(), key, value).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, redisRes, modisRes)
+}

@@ -77,63 +77,63 @@ func TestSet_SAdd(t *testing.T) {
 	assert.EqualValues(t, 0, len(difference(membersRedis, membersModis)))
 }
 
-// func TestSet_SCard(t *testing.T) {
-// 	key := "setKey"
-// 	defer test.ClearDb(0, rCli, testModisSetTableName)
+func TestSet_SCard(t *testing.T) {
+	key := "setKey"
+	defer test.ClearDb(0, rCli, testModisSetTableName)
 
-// 	countRedis, err := rCli.SCard(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	countModis, err := mCli.SCard(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, countRedis, countModis)
+	countRedis, err := rCli.SCard(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	countModis, err := mCli.SCard(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, countRedis, countModis)
 
-// 	members := generateTestData(10)
-// 	for _, member := range members {
-// 		err := rCli.SAdd(context.TODO(), key, member).Err()
-// 		assert.Equal(t, nil, err)
-// 		err = mCli.SAdd(context.TODO(), key, member).Err()
-// 		assert.Equal(t, nil, err)
-// 	}
-// 	countRedis, err = rCli.SCard(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	countModis, err = mCli.SCard(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, countRedis, countModis)
-// }
+	members := generateTestData(10)
+	for _, member := range members {
+		err := rCli.SAdd(context.TODO(), key, member).Err()
+		assert.Equal(t, nil, err)
+		err = mCli.SAdd(context.TODO(), key, member).Err()
+		assert.Equal(t, nil, err)
+	}
+	countRedis, err = rCli.SCard(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	countModis, err = mCli.SCard(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, countRedis, countModis)
+}
 
-// func TestSet_SDiff(t *testing.T) {
-// 	key1 := "set1"
-// 	key2 := "set2"
-// 	key3 := "set3"
-// 	defer test.ClearDb(0, rCli, testModisSetTableName)
+func TestSet_SDiff(t *testing.T) {
+	key1 := "set1"
+	key2 := "set2"
+	key3 := "set3"
+	defer test.ClearDb(0, rCli, testModisSetTableName)
 
-// 	diffRedis, err := rCli.SDiff(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	diffModis, err := mCli.SDiff(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, diffRedis, diffModis)
+	diffRedis, err := rCli.SDiff(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	diffModis, err := mCli.SDiff(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, diffRedis, diffModis)
 
-// 	err = rCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = rCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = rCli.SAdd(context.TODO(), key3, "e", "g", "h").Err()
-// 	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
+	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
+	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key3, "e", "g", "h").Err()
+	assert.Equal(t, nil, err)
 
-// 	err = mCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = mCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = mCli.SAdd(context.TODO(), key3, "e", "g", "h").Err()
-// 	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
+	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
+	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key3, "e", "g", "h").Err()
+	assert.Equal(t, nil, err)
 
-// 	diffRedis, err = rCli.SDiff(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	diffModis, err = mCli.SDiff(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, 2, len(diffRedis))
-// 	assert.EqualValues(t, 0, len(difference(diffRedis, diffModis)))
-// }
+	diffRedis, err = rCli.SDiff(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	diffModis, err = mCli.SDiff(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, 2, len(diffRedis))
+	assert.EqualValues(t, 0, len(difference(diffRedis, diffModis)))
+}
 
 func TestSet_SDiffStore(t *testing.T) {
 	key1 := "set1"
@@ -169,38 +169,38 @@ func TestSet_SDiffStore(t *testing.T) {
 	assert.EqualValues(t, countRedis, countModis)
 }
 
-// func TestSet_SInter(t *testing.T) {
-// 	key1 := "set1"
-// 	key2 := "set2"
-// 	key3 := "set3"
-// 	defer test.ClearDb(0, rCli, testModisSetTableName)
+func TestSet_SInter(t *testing.T) {
+	key1 := "set1"
+	key2 := "set2"
+	key3 := "set3"
+	defer test.ClearDb(0, rCli, testModisSetTableName)
 
-// 	interRedis, err := rCli.SInter(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	interModis, err := mCli.SInter(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, interRedis, interModis)
+	interRedis, err := rCli.SInter(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	interModis, err := mCli.SInter(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, interRedis, interModis)
 
-// 	err = rCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = rCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = rCli.SAdd(context.TODO(), key3, "c", "g", "h").Err()
-// 	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
+	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
+	assert.Equal(t, nil, err)
+	err = rCli.SAdd(context.TODO(), key3, "c", "g", "h").Err()
+	assert.Equal(t, nil, err)
 
-// 	err = mCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = mCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
-// 	assert.Equal(t, nil, err)
-// 	err = mCli.SAdd(context.TODO(), key3, "c", "g", "h").Err()
-// 	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key1, "a", "b", "c").Err()
+	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key2, "c", "d", "e").Err()
+	assert.Equal(t, nil, err)
+	err = mCli.SAdd(context.TODO(), key3, "c", "g", "h").Err()
+	assert.Equal(t, nil, err)
 
-// 	interRedis, err = rCli.SInter(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	interModis, err = mCli.SInter(context.TODO(), key1, key2, key3).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, interRedis, interModis)
-// }
+	interRedis, err = rCli.SInter(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	interModis, err = mCli.SInter(context.TODO(), key1, key2, key3).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, interRedis, interModis)
+}
 
 func TestSet_SInterStore(t *testing.T) {
 	key1 := "set1"
@@ -304,30 +304,30 @@ func TestSet_SUnionStore(t *testing.T) {
 	assert.EqualValues(t, countRedis, countModis)
 }
 
-// func TestSet_SMembers(t *testing.T) {
-// 	key := "setKey"
-// 	defer test.ClearDb(0, rCli, testModisSetTableName)
+func TestSet_SMembers(t *testing.T) {
+	key := "setKey"
+	defer test.ClearDb(0, rCli, testModisSetTableName)
 
-// 	membersRedis, err := rCli.SMembers(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	membersModis, err := mCli.SMembers(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, membersRedis, membersModis)
+	membersRedis, err := rCli.SMembers(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err := mCli.SMembers(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, membersRedis, membersModis)
 
-// 	members := generateTestData(10)
-// 	for _, member := range members {
-// 		err := rCli.SAdd(context.TODO(), key, member).Err()
-// 		assert.Equal(t, nil, err)
-// 		err = mCli.SAdd(context.TODO(), key, member).Err()
-// 		assert.Equal(t, nil, err)
-// 	}
+	members := generateTestData(10)
+	for _, member := range members {
+		err := rCli.SAdd(context.TODO(), key, member).Err()
+		assert.Equal(t, nil, err)
+		err = mCli.SAdd(context.TODO(), key, member).Err()
+		assert.Equal(t, nil, err)
+	}
 
-// 	membersRedis, err = rCli.SMembers(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	membersModis, err = mCli.SMembers(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, 0, len(difference(membersRedis, membersModis)))
-// }
+	membersRedis, err = rCli.SMembers(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err = mCli.SMembers(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, 0, len(difference(membersRedis, membersModis)))
+}
 
 func TestSet_SIsmember(t *testing.T) {
 	key := "setKey"

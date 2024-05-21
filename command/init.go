@@ -51,11 +51,11 @@ func init() {
 		"mset":        {Cmd: MSet, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"strlen":      {Cmd: Strlen, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"append":      {Cmd: Append, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"incr":        {Cmd: TempNotSupport, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"decr":        {Cmd: TempNotSupport, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"incrby":      {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"incrbyfloat": {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"decrby":      {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"incr":        {Cmd: Incr, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"decr":        {Cmd: Decr, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"incrby":      {Cmd: IncrBy, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"incrbyfloat": {Cmd: IncrByFloat, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"decrby":      {Cmd: DecrBy, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"setbit":      {Cmd: SetBit, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"getbit":      {Cmd: GetBit, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"bitcount":    {Cmd: BitCount, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
@@ -65,7 +65,7 @@ func init() {
 
 		// keys
 		"type":      {Cmd: Type, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"exists":    {Cmd: TempNotSupport, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"exists":    {Cmd: Exists, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"del":       {Cmd: Delete, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"expire":    {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"expireat":  {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
@@ -88,7 +88,7 @@ func init() {
 		"hlen":         {Cmd: HLen, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"hsetnx":       {Cmd: HSetNX, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"hmget":        {Cmd: HMGet, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"hmset":        {Cmd: TempNotSupport, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"hmset":        {Cmd: HMSet, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 
 		// sets
 		"sadd":        {Cmd: SAdd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},

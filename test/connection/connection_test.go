@@ -17,70 +17,46 @@
 package connection
 
 import (
-	"fmt"
+	"context"
 	"testing"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/oceanbase/modis/test"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAuth(t *testing.T) {
-	// 1. without pass
-	redisCli := redis.NewClient(&redis.Options{
-		Addr:     test.RedisAddr,
-		Password: "",
-		DB:       test.RedisDB,
+	cmds_m, err := mCli.Pipelined(context.TODO(), func(pipe redis.Pipeliner) error {
+		pipe.Auth(context.TODO(), "password")
+		pipe.Auth(context.TODO(), "")
+		return nil
 	})
-	_, redis_err := redisCli.Ping(redisCli.Context()).Result()
-	assert.NotEqual(t, nil, redis_err)
-	assert.Equal(t, "NOAUTH Authentication required.", redis_err.Error())
+	assert.NotEqual(t, nil, err)
+	assert.Contains(t, err.Error(), "ERR AUTH")
+	assert.Contains(t, cmds_m[0].Err().Error(), "ERR AUTH")
+	assert.Contains(t, cmds_m[1].Err().Error(), "ERR AUTH")
+}
 
-	modisCli := redis.NewClient(&redis.Options{
-		Addr:     test.ModisAddr,
-		Password: "",
-		DB:       test.ModisDB,
-	})
-	_, modis_err := modisCli.Ping(modisCli.Context()).Result()
-	assert.NotEqual(t, nil, modis_err)
-	assert.Equal(t, redis_err.Error(), modis_err.Error())
+func TestEcho(t *testing.T) {
+	msg := "hello"
+	pipe := rCli.Pipeline()
+	echo := pipe.Echo(context.TODO(), msg)
+	_, err := pipe.Exec(context.TODO())
+	assert.Equal(t, nil, err)
+	assert.Equal(t, nil, echo.Err())
+	assert.Equal(t, msg, echo.Val())
 
-	// 2. wrong pass
-	pass := "wrongpass"
-	redisCli = redis.NewClient(&redis.Options{
-		Addr:     test.RedisAddr,
-		Password: pass,
-		DB:       test.RedisDB,
-	})
-	_, redis_err = redisCli.Ping(redisCli.Context()).Result()
-	assert.NotEqual(t, nil, redis_err)
+	pipe = mCli.Pipeline()
+	echo_m := pipe.Echo(context.TODO(), msg)
+	_, err = pipe.Exec(context.TODO())
+	assert.Equal(t, nil, err)
+	assert.Equal(t, echo, echo_m)
+}
 
-	modisCli = redis.NewClient(&redis.Options{
-		Addr:     test.ModisAddr,
-		Password: pass,
-		DB:       test.ModisDB,
-	})
-	_, modis_err = modisCli.Ping(modisCli.Context()).Result()
-	assert.NotEqual(t, nil, modis_err)
+func TestPing(t *testing.T) {
+	ping := rCli.Ping(context.TODO())
+	assert.Equal(t, nil, ping.Err())
+	assert.Equal(t, "PONG", ping.Val())
 
-	// 2. correct pass
-	pass = "foobared"
-	redisCli = redis.NewClient(&redis.Options{
-		Addr:     test.RedisAddr,
-		Password: pass,
-		DB:       test.RedisDB,
-	})
-	var redis_pong, modis_pong string
-	redis_pong, redis_err = redisCli.Ping(redisCli.Context()).Result()
-	assert.Equal(t, nil, redis_err)
-	fmt.Println("redis ping: " + redis_pong)
-
-	modisCli = redis.NewClient(&redis.Options{
-		Addr:     test.ModisAddr,
-		Password: pass,
-		DB:       test.ModisDB,
-	})
-	_, modis_err = modisCli.Ping(modisCli.Context()).Result()
-	assert.Equal(t, nil, modis_err)
-	fmt.Println("modis ping: " + modis_pong)
+	ping_m := mCli.Ping(context.TODO())
+	assert.Equal(t, ping, ping_m)
 }
