@@ -48,7 +48,7 @@ func TestKey_Del(t *testing.T) {
 	value := "Value"
 	// field := "Field"
 	member := "Member"
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	delRedis, err := rCli.Del(context.TODO(), key).Result()
@@ -99,7 +99,7 @@ func TestKey_Exists(t *testing.T) {
 	value := "Value"
 	// field := "Field"
 	member := "Member"
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	existsRedis, err := rCli.Exists(context.TODO(), key).Result()
@@ -165,7 +165,7 @@ func TestKey_Type(t *testing.T) {
 	value := "Value"
 	// field := "Field"
 	member := "Member"
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	typeRedis, err := rCli.Type(context.TODO(), key).Result()
@@ -232,7 +232,7 @@ func TestKey_Expire(t *testing.T) {
 	// field := "Field"
 	member := "Member"
 	expiration := time.Second * 1
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
@@ -303,7 +303,7 @@ func TestKey_ExpireAt(t *testing.T) {
 	member := "Member"
 	expiration := 1 * time.Second
 	tm := time.Now().Add(expiration)
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	expireRedis, err := rCli.ExpireAt(context.TODO(), key, tm).Result()
@@ -373,7 +373,7 @@ func TestKey_PExpire(t *testing.T) {
 	// field := "Field"
 	member := "Member"
 	expiration := 1000 * time.Microsecond
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	expireRedis, err := rCli.PExpire(context.TODO(), key, expiration).Result()
@@ -444,7 +444,7 @@ func TestKey_PExpireAt(t *testing.T) {
 	member := "Member"
 	expiration := 1000 * time.Microsecond
 	tm := time.Now().Add(expiration)
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	expireRedis, err := rCli.PExpireAt(context.TODO(), key, tm).Result()
@@ -514,7 +514,7 @@ func TestKey_Persist(t *testing.T) {
 	// field := "Field"
 	member := "Member"
 	expiration := time.Second * 1
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	persistRedis, err := rCli.Persist(context.TODO(), key).Result()
@@ -614,7 +614,7 @@ func TestKey_TTL(t *testing.T) {
 	// field := "Field"
 	member := "Member"
 	expiration := time.Second * 10
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	ttlRedis, err := rCli.TTL(context.TODO(), key).Result()
@@ -696,7 +696,7 @@ func TestKey_PTTL(t *testing.T) {
 	// field := "Field"
 	member := "Member"
 	expiration := time.Second * 10
-	defer test.ClearDb(rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
 	ttlRedis, err := rCli.PTTL(context.TODO(), key).Result()

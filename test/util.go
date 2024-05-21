@@ -20,10 +20,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/log"
 
+	_ "github.com/go-mysql-org/go-mysql/driver"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -84,7 +86,8 @@ func CreateModisClient() *redis.Client {
 
 func CreateDB() {
 	if GlobalDB == nil {
-		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", SqlUser, SqlPassWord, SqlIp, SqlPort, SqlDatabase)
+		// dsn format: "user:password@addr?dbname"
+		dsn := fmt.Sprintf("%s:%s@%s:%s?%s", SqlUser, SqlPassWord, SqlIp, SqlPort, SqlDatabase)
 		db, err := sql.Open("mysql", dsn)
 		if err != nil {
 			panic(err.Error())
@@ -93,13 +96,14 @@ func CreateDB() {
 	}
 }
 
-func ClearDb(rCli *redis.Client, tableNames ...string) {
+func ClearDb(db int64, rCli *redis.Client, tableNames ...string) {
 	err := rCli.FlushDB(context.TODO()).Err()
 	if err != nil {
 		panic(err.Error())
 	}
 	for _, tb := range tableNames {
-		_, err = GlobalDB.Exec("truncate table " + tb + ";")
+		delSql := "delete from " + tb + " where db = " + strconv.FormatInt(db, 10) + ";"
+		_, err = GlobalDB.Exec(delSql)
 		if err != nil {
 			panic(err.Error())
 		}

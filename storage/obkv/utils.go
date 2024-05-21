@@ -22,6 +22,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/obkv-table-client-go/client/option"
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
@@ -85,6 +86,7 @@ func (s *Storage) ObServerCmd(ctx context.Context, tableName string, rowKey []*t
 		mutateColumns,
 		option.WithReturnAffectedEntity(true),
 	)
+	log.Debug("storage", nil, "Redis command", log.String("table name", tableName), log.String("table name", string(plainText)))
 	if err != nil {
 		return "", err
 	}

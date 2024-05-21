@@ -31,7 +31,7 @@ const (
 )
 
 // func TestHash_HSet(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HSet(context.TODO(), "myhash", "key1", "value1").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -54,7 +54,7 @@ const (
 // }
 
 func TestHash_HSetNX(t *testing.T) {
-	defer test.ClearDb(rCli, testModisHashTableName)
+	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 	rVal, rErr := rCli.HSetNX(context.TODO(), "myhash", "key1", "value1").Result()
 	assert.Equal(t, nil, rErr)
@@ -70,7 +70,7 @@ func TestHash_HSetNX(t *testing.T) {
 }
 
 // func TestHash_HMSet(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HMSet(context.TODO(), "myhash", "key1", "value1").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -93,7 +93,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HGet(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HGet(context.TODO(), "myhash", "key1").Result()
 // 	mVal, mErr := mCli.HGet(context.TODO(), "myhash", "key1").Result()
@@ -115,7 +115,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HMGet(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HMGet(context.TODO(), "myhash", "key1").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -138,7 +138,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HDel(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HGet(context.TODO(), "myhash", "key1").Result()
 // 	mVal, mErr := mCli.HGet(context.TODO(), "myhash", "key1").Result()
@@ -172,7 +172,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HLen(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HLen(context.TODO(), "myhash").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -195,7 +195,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HExists(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HExists(context.TODO(), "myhash", "key1").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -218,7 +218,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HGetAll(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HGetAll(context.TODO(), "myhash").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -241,7 +241,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HIncrBy(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HIncrBy(context.TODO(), "myhash", "key1", 5).Result()
 // 	assert.Equal(t, nil, rErr)
@@ -269,7 +269,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HIncrByFloat(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HIncrByFloat(context.TODO(), "myhash", "key1", 1.5).Result()
 // 	assert.Equal(t, nil, rErr)
@@ -297,7 +297,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HKeys(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HKeys(context.TODO(), "myhash").Result()
 // 	assert.Equal(t, nil, rErr)
@@ -320,7 +320,7 @@ func TestHash_HSetNX(t *testing.T) {
 // }
 
 // func TestHash_HVals(t *testing.T) {
-// 	defer test.ClearDb(rCli, testModisHashTableName)
+// 	defer test.ClearDb(0, rCli, testModisHashTableName)
 
 // 	rVal, rErr := rCli.HVals(context.TODO(), "myhash").Result()
 // 	assert.Equal(t, nil, rErr)

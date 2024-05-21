@@ -109,7 +109,7 @@ func init() {
 		// zsets
 		"zadd":             {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrange":           {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zrevrange":        {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zrevrange":        {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrem":             {Cmd: ZSetCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zcard":            {Cmd: ZSetCmdWithKey, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zincrby":          {Cmd: ZIncrBy, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
