@@ -121,6 +121,12 @@ func TestInteger_Encode(t *testing.T) {
 	assert.Equal(":1\r\n", enc_msg)
 }
 
+func TestInteger_Decode(t *testing.T) {
+	dec_int, err := resp.DecInteger(":1\r\n")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, 1, dec_int)
+}
+
 func TestNullBulkString_Encode(t *testing.T) {
 	assert := assert.New(t)
 	enc_msg := resp.EncNullBulkString()

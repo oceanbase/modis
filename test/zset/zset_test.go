@@ -18,6 +18,7 @@ package zset
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"testing"
 
@@ -43,7 +44,10 @@ func generateTestData(count int) ([]string, []float64) {
 	return members, scores
 }
 
-func do_zadd(t *testing.T, key string, members []string, scores []float64) {
+func do_zadd(t *testing.T, key string, members []string, scores []float64) error {
+	if len(members) == 0 || len(members) != len(scores) {
+		return errors.New("invalid members or scores len")
+	}
 	// do zadd with insert
 	for i, member := range members {
 		added, err := rCli.ZAdd(context.TODO(), key, &redis.Z{Score: scores[i], Member: member}).Result()
@@ -63,13 +67,14 @@ func do_zadd(t *testing.T, key string, members []string, scores []float64) {
 	added_m, err := mCli.ZAdd(context.TODO(), key, &redis.Z{Score: scores[0], Member: members[0]}).Result()
 	assert.Equal(t, nil, err)
 	assert.Equal(t, added, added_m)
+	return nil
 }
 
 func TestZRange(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// check zrange 1
 	vals, err := rCli.ZRangeWithScores(context.TODO(), key, 0, -1).Result()
@@ -121,7 +126,7 @@ func TestZRevRange(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// check zrevrange 1
 	vals, err := rCli.ZRevRangeWithScores(context.TODO(), key, 0, -1).Result()
@@ -173,7 +178,7 @@ func TestZRem(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// do zrem
 	zRemCount, err := rCli.ZRem(context.TODO(), key, members[1]).Result()
@@ -204,7 +209,7 @@ func TestZCard(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// do zcard
 	card, err := rCli.ZCard(context.TODO(), key).Result()
@@ -220,7 +225,7 @@ func TestZIncrBy(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// do incrby
 	n, err := rCli.ZIncrBy(context.TODO(), key, 2, members[2]).Result()
@@ -254,7 +259,7 @@ func TestZScore(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// do zscore
 	score, err := rCli.ZScore(context.TODO(), key, members[1]).Result()
@@ -270,7 +275,7 @@ func TestZRank(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// do zrevrank
 	rank, err := rCli.ZRank(context.TODO(), key, members[2]).Result()
@@ -286,7 +291,7 @@ func TestZRevRank(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	rank, err := rCli.ZRevRank(context.TODO(), key, members[2]).Result()
 	assert.Equal(t, nil, err)
@@ -301,7 +306,7 @@ func TestZRemRangeByRank(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	n, err := rCli.ZRemRangeByRank(context.TODO(), key, 0, 1).Result()
 	assert.Equal(t, nil, err)
@@ -328,7 +333,7 @@ func TestZCount(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// 1
 	n, err := rCli.ZCount(context.TODO(), key, "-inf", "+inf").Result()
@@ -353,7 +358,7 @@ func TestZRangeByScore(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// 1
 	rangeScores, err := rCli.ZRangeByScore(context.TODO(), key, &redis.ZRangeBy{
@@ -420,7 +425,7 @@ func TestZRevRangeByScore(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	// 1
 	rangeScores, err := rCli.ZRevRangeByScore(context.TODO(), key, &redis.ZRangeBy{
@@ -487,7 +492,7 @@ func TestZRemRangeByScore(t *testing.T) {
 	key := "zsetkey"
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	members, scores := generateTestData(3)
-	do_zadd(t, key, members, scores)
+	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
 	zRemCount, err := rCli.ZRemRangeByScore(context.TODO(), key, "-inf", "(2").Result()
 	assert.Equal(t, nil, err)
@@ -517,10 +522,10 @@ func TestZUnionStore(t *testing.T) {
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	key1 := "zsetkey1"
 	members1, scores1 := generateTestData(3)
-	do_zadd(t, key1, members1, scores1)
+	assert.Equal(t, nil, do_zadd(t, key1, members1, scores1))
 	key2 := "zsetkey2"
 	members2, scores2 := generateTestData(2)
-	do_zadd(t, key2, members2, scores2)
+	assert.Equal(t, nil, do_zadd(t, key2, members2, scores2))
 	outKey := "out"
 
 	n, err := rCli.ZUnionStore(context.TODO(), outKey, &redis.ZStore{
@@ -560,10 +565,10 @@ func TestZInterStore(t *testing.T) {
 	defer test.ClearDb(0, rCli, testModisZSetTableName)
 	key1 := "zsetkey1"
 	members1, scores1 := generateTestData(2)
-	do_zadd(t, key1, members1, scores1)
+	assert.Equal(t, nil, do_zadd(t, key1, members1, scores1))
 	key2 := "zsetkey2"
 	members2, scores2 := generateTestData(3)
-	do_zadd(t, key2, members2, scores2)
+	assert.Equal(t, nil, do_zadd(t, key2, members2, scores2))
 	outKey := "out"
 
 	n, err := rCli.ZInterStore(context.TODO(), outKey, &redis.ZStore{

@@ -37,7 +37,8 @@ func setup() {
 	test.CreateTable(testModisStringCreateStatement)
 	test.CreateTable(testModisHashCreateStatement)
 	test.CreateTable(testModisSetCreateStatement)
-	test.ClearDb(0, rCli, testModisSetTableName, testModisStringTableName, testModisHashTableName)
+	test.CreateTable(testModisZSetCreateStatement)
+	test.ClearDb(0, rCli, testModisSetTableName, testModisStringTableName, testModisHashTableName, testModisZSetTableName)
 }
 
 func teardown() {

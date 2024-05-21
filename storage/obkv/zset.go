@@ -20,6 +20,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
@@ -27,36 +28,68 @@ const (
 	zsetTableName = "modis_zset_table"
 )
 
-// ZAdd add member to zset
-func (s *Storage) ZAdd(ctx context.Context, db int64, key []byte, memberScore map[string]int64) (int, error) {
-	return 0, nil
-}
-
-// ZRange get data with the range
-func (s *Storage) ZRange(ctx context.Context, db int64, key []byte, start int64, end int64, withScore bool) ([][]byte, error) {
-	return nil, nil
-}
-
-// ZCard get the size of the key
-func (s *Storage) ZCard(ctx context.Context, db int64, key []byte) (int, error) {
-	return 0, nil
-}
-
-// ZRem remove the member from the key
-func (s *Storage) ZRem(ctx context.Context, db int64, key []byte, members [][]byte) (int, error) {
-	return 0, nil
-}
-
 // zsetExists check the number of keys that exist in zset table
 func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
-	// todo:impl
-	return 0, nil
+	var existNum int64 = 0
+	plainArray := make([][]byte, 2)
+	plainArray[0] = []byte("zcard")
+
+	for _, key := range keys {
+		plainArray[1] = key
+		encodedArray := resp.EncArray(plainArray)
+		rowKey := []*table.Column{
+			table.NewColumn(dbColumnName, db),
+			table.NewColumn(keyColumnName, key),
+		}
+
+		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		if err != nil {
+			return 0, err
+		}
+
+		curDelNum, err := resp.DecInteger(outContent)
+		if err != nil {
+			return 0, err
+		}
+		if curDelNum > 0 {
+			existNum += 1
+		}
+	}
+
+	return existNum, nil
 }
 
 // deleteZSet delete zset table
 func (s *Storage) deleteZSet(ctx context.Context, db int64, keys [][]byte) (int64, error) {
-	// todo:impl
-	return 0, nil
+	var deleteNum int64 = 0
+	plainArray := make([][]byte, 4)
+	plainArray[0] = []byte("zremrangebyrank")
+	plainArray[2] = []byte("0")
+	plainArray[3] = []byte("-1")
+
+	for _, key := range keys {
+		plainArray[1] = key
+		encodedArray := resp.EncArray(plainArray)
+		rowKey := []*table.Column{
+			table.NewColumn(dbColumnName, db),
+			table.NewColumn(keyColumnName, key),
+		}
+
+		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		if err != nil {
+			return 0, err
+		}
+
+		curDelNum, err := resp.DecInteger(outContent)
+		if err != nil {
+			return 0, err
+		}
+		if curDelNum > 0 {
+			deleteNum++
+		}
+	}
+
+	return deleteNum, nil
 }
 
 // expireZSet expire zset table

@@ -116,7 +116,7 @@ func init() {
 		"zscore":           {Cmd: ZSetCmdWithKeyMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrank":            {Cmd: ZSetCmdWithKeyMember, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrevrank":         {Cmd: ZSetCmdWithKeyMember, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zremrangebyrank":  {Cmd: ZSetCmdWithKeyMember, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zremrangebyrank":  {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zcount":           {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrangebyscore":    {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrevrangebyscore": {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},

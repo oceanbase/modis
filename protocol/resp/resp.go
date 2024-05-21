@@ -18,6 +18,7 @@ package resp
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"strconv"
@@ -166,4 +167,30 @@ func (r *Decoder) BulkString(plainReq *[]byte) ([]byte, error) {
 	*plainReq = append(*plainReq, body[:len(body)-2]...)
 	*plainReq = append(*plainReq, []byte{'\r', '\n'}...)
 	return body[:len(body)-2], nil
+}
+
+func (r *Decoder) Integer() (int, error) {
+	line, err := r.bufReader.ReadBytes('\n')
+	if err != nil {
+		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
+		return 0, err
+	}
+
+	l := len(line)
+	if l < len("$*\r\n") || line[l-2] != '\r' || line[0] != ':' {
+		return 0, ErrInvalidProtocol
+	}
+
+	retInt, err := strconv.Atoi(util.BytesToString(line[1 : l-2]))
+	if err != nil {
+		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
+		return 0, ErrInvalidProtocol
+	}
+	return retInt, nil
+}
+
+func DecInteger(msg string) (int, error) {
+	d := NewDecoder(bufio.NewReader(bytes.NewBufferString(msg)))
+	val, err := d.Integer()
+	return val, err
 }

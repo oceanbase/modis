@@ -73,12 +73,6 @@ type Storage interface {
 	SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
 	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
 
-	// zset commands
-	ZAdd(ctx context.Context, db int64, key []byte, memberScore map[string]int64) (int, error)
-	ZRange(ctx context.Context, db int64, key []byte, start int64, end int64, withScore bool) ([][]byte, error)
-	ZCard(ctx context.Context, db int64, key []byte) (int, error)
-	ZRem(ctx context.Context, db int64, key []byte, members [][]byte) (int, error)
-
 	// server commands
 	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
 

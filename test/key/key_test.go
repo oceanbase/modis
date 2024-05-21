@@ -20,6 +20,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/oceanbase/modis/test"
@@ -34,6 +35,9 @@ const (
 
 	testModisSetTableName       = "modis_set_table"
 	testModisSetCreateStatement = "create table if not exists modis_set_table(db bigint not null,rkey varbinary(1024) not null,member varbinary(1024) not null,expire_ts timestamp(6) default null,primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND)partition by key(db, rkey) partitions 3;"
+
+	testModisZSetTableName       = "modis_zset_table"
+	testModisZSetCreateStatement = "create table if not exists modis_zset_table(db bigint not null, rkey varbinary(1024) not null, member varbinary(1024) not null, score double not null, expire_ts timestamp(6) default null, index index_score(score) local, primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND) partition by key(db, rkey) partitions 3;"
 )
 
 func deleteTable() {
@@ -45,8 +49,9 @@ func deleteTable() {
 func TestKey_Del(t *testing.T) {
 	key := "Key"
 	value := "Value"
-	// field := "Field"
+	field := "Field"
 	member := "Member"
+	score := 1.234
 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
@@ -68,17 +73,17 @@ func TestKey_Del(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // hash
-	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, hsetRedis, hsetModis)
-	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// delModis, err = mCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, delRedis, delModis)
+	// hash
+	hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, hsetRedis, hsetModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 
 	// set
 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
@@ -91,13 +96,26 @@ func TestKey_Del(t *testing.T) {
 	delModis, err = mCli.Del(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
+
+	// zset
+	zaddRedis, err := rCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	zaddModis, err := mCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, zaddRedis, zaddModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 }
 
 func TestKey_Exists(t *testing.T) {
 	key := "Key"
 	value := "Value"
-	// field := "Field"
+	field := "Field"
 	member := "Member"
+	score := 1.234
 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
@@ -124,22 +142,22 @@ func TestKey_Exists(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // hash
-	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, hsetRedis, hsetModis)
-	// existsRedis, err = rCli.Exists(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// existsModis, err = mCli.Exists(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, existsRedis, existsModis)
-	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// delModis, err = mCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, delRedis, delModis)
+	// hash
+	hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, hsetRedis, hsetModis)
+	existsRedis, err = rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existsModis, err = mCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existsRedis, existsModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 
 	// set
 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
@@ -157,13 +175,31 @@ func TestKey_Exists(t *testing.T) {
 	delModis, err = mCli.Del(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
+
+	// zset
+	zaddRedis, err := rCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	zaddModis, err := mCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, zaddRedis, zaddModis)
+	existsRedis, err = rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existsModis, err = mCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existsRedis, existsModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 }
 
 func TestKey_Type(t *testing.T) {
 	key := "Key"
 	value := "Value"
-	// field := "Field"
+	field := "Field"
 	member := "Member"
+	score := 1.234
 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
 
 	// empty
@@ -190,22 +226,22 @@ func TestKey_Type(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // hash
-	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, hsetRedis, hsetModis)
-	// typeRedis, err = rCli.Type(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// typeModis, err = mCli.Type(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, typeRedis, typeModis)
-	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// delModis, err = mCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, delRedis, delModis)
+	// hash
+	hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, hsetRedis, hsetModis)
+	typeRedis, err = rCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	typeModis, err = mCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, typeRedis, typeModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 
 	// set
 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
@@ -213,6 +249,23 @@ func TestKey_Type(t *testing.T) {
 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, saddRedis, saddModis)
+	typeRedis, err = rCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	typeModis, err = mCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, typeRedis, typeModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
+
+	// zset
+	zaddRedis, err := rCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	zaddModis, err := mCli.ZAdd(context.TODO(), key, &redis.Z{Score: score, Member: member}).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, zaddRedis, zaddModis)
 	typeRedis, err = rCli.Type(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
 	typeModis, err = mCli.Type(context.TODO(), key).Result()
