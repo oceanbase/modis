@@ -30,6 +30,7 @@ const (
 	valueColumnName  = "value"
 	expireColumnName = "expire_ts"
 	memberColumnName = "member"
+	indexColumnName  = "index"
 )
 
 func bitCount(bytes []byte, start, end int) (int, error) {

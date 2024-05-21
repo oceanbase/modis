@@ -123,6 +123,22 @@ func init() {
 		"zremrangebyscore": {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zunionstore":      {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zinterstore":      {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+
+		// list
+		"lpush":     {Cmd: ListCmd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lpushx":    {Cmd: ListCmd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"rpush":     {Cmd: ListCmd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"rpushx":    {Cmd: ListCmd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lpop":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"rpop":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lindex":    {Cmd: ListCmd, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lset":      {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lrange":    {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"ltrim":     {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"linsert":   {Cmd: ListCmd, Arity: 5, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"llen":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"lrem":      {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"rpoplpush": {Cmd: ListCmd, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 	}
 
 	tables = []string{
