@@ -51,7 +51,6 @@ type Storage interface {
 	GetSet(ctx context.Context, db int64, key []byte, value []byte) ([]byte, error)
 
 	// hash commands
-	HSet(ctx context.Context, db int64, key []byte, fieldValue map[string][]byte) (int, error)
 	HSetNx(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int, error)
 	HMGet(ctx context.Context, db int64, key []byte, fields [][]byte) ([][]byte, error)
 	HGet(ctx context.Context, db int64, key []byte, field []byte) ([]byte, error)
