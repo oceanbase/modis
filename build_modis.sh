@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 定义变量以获取当前的 Git commit hash, 分支名, 最新的commit信息和构建时间戳
+# Define variables to get the current Git commit hash, the branch name, the latest commit information, and the build timestamp
 COMMIT_HASH=$(git rev-parse HEAD)
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 BUILD_TIME=$(date "+%Y-%m-%d %H:%M:%S")
@@ -13,20 +13,19 @@ if [ -n "$SOURCE_DATE_EPOCH" ]; then
   BUILD_ID=$(date -u -d "@$SOURCE_DATE_EPOCH" +%s 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" +%s 2>/dev/null || date -u +%s)
 fi
 
-# 构建 Go 程序，注入 Git commit hash, 分支名, 构建时间, commit log 和 Go 版本
+# Build the Go program, inject Git commit hash, branch name, build time, commit log, and Go version
 cd cmd/modis
 go mod tidy
 go mod verify
 go build -ldflags  \
-"-X 'main.CommitLog=$LAST_COMMIT_LOG' \
--X 'main.GolangVersion=$GO_VERSION'\
+"-X 'main.GolangVersion=$GO_VERSION'\
 -X 'github.com/oceanbase/modis/command.GitSha1=$GIT_SHA1'\
 -X 'github.com/oceanbase/modis/command.GitDirty=$GIT_DIRTY'\
 -X 'github.com/oceanbase/modis/command.BuildID=$BUILD_ID'\
 -X 'github.com/oceanbase/modis/command.ModisVer=0.1.0'\
 "
 
-# 检查构建是否成功
+# Check whether the build was successful
 if [ $? -eq 0 ]; then
     cd ../..
     mv -f cmd/modis/modis .
