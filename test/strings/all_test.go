@@ -51,6 +51,7 @@ func setup() {
 	// Connect
 	test.CreateDB()
 	test.CreateTable(createStringTable)
+	test.ClearDb(0, redisCli, stringTableName)
 }
 
 func teardown() {

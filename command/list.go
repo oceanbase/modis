@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-package server
+package command
 
 import (
-	"sync/atomic"
+	"github.com/oceanbase/modis/protocol/resp"
+	"github.com/oceanbase/obkv-table-client-go/table"
+	"math"
 )
 
 const (
-	// InitClientID + 1 is the first client's ID
-	InitClientID = 0
-	// DefaultDBNum is default num of DB
-	DefaultDBNum = 0
+	listTableName = "modis_list_table"
 )
 
-// GenClientID generates client id
-func GenClientID() func() int64 {
-	var id int64 = InitClientID
-	return func() int64 {
-		return atomic.AddInt64(&id, 1)
+func ListCmd(ctx *CmdContext) error {
+	key := ctx.Args[0]
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, key),
+		table.NewColumn(indexColumnName, int64(math.MinInt64)),
 	}
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, listTableName, rowKey, ctx.PlainReq)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	}
+	return nil
 }

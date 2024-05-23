@@ -18,6 +18,19 @@ package command
 
 import (
 	"bytes"
+
+	"github.com/oceanbase/modis/connection/conncontext"
+	"github.com/oceanbase/modis/log"
+	"github.com/oceanbase/modis/storage/obkv"
+)
+
+const (
+	dbColumnName     = "db"
+	keyColumnName    = "rkey"
+	valueColumnName  = "value"
+	expireColumnName = "expire_ts"
+	memberColumnName = "member"
+	indexColumnName  = "index"
 )
 
 func bitCount(bytes []byte, start, end int) (int, error) {
@@ -158,4 +171,39 @@ func getDifference(slices ...[][]byte) [][]byte {
 	}
 
 	return diff
+}
+
+func clientFlag2Str(flag conncontext.ClientFlag) string {
+	flagStr := ""
+	if (flag & conncontext.ClientMonitor) != 0 {
+		flagStr += "O"
+	}
+	if flagStr == "" {
+		flagStr = "N"
+	}
+	return flagStr
+}
+
+func getDBInfo(ctx *CmdContext, db int64) (*DBInfo, error) {
+	var tbInfo *obkv.TableInfo
+	var err error
+	dbInfo := &DBInfo{Keys: 0, Expires: 0}
+	for _, tbName := range tables {
+		tbInfo, err = ctx.CodecCtx.DB.Storage.GetTableInfo(ctx.CodecCtx.DB.Ctx, db, tbName)
+		if err != nil {
+			log.Warn("command", ctx.TraceID, "fail to get table info",
+				log.Errors(err), log.Int64("db", db), log.String("table name", tbName))
+			return nil, err
+		}
+		dbInfo.Keys += tbInfo.Keys
+		dbInfo.Expires += tbInfo.Expires
+	}
+	return dbInfo, nil
+}
+
+func replaceWithRedacted(arg []byte) {
+	red := []byte("(redacted)")
+	if !bytes.Equal(arg, red) {
+		arg = red
+	}
 }

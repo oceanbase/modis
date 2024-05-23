@@ -54,6 +54,8 @@ type ServerConfig struct {
 	Listen        string `mapstructure:"listen" json:"listen" yaml:"listen"`
 	MaxConnection int    `mapstructure:"max-connection" json:"max-connection" yaml:"max-connection"`
 	Password      string `mapstructure:"password" json:"password" yaml:"password"`
+	DBNum         int64  `mapstructure:"databases" json:"databases" yaml:"databases"`
+	Supervised    string `mapstructure:"supervised" json:"supervised" yaml:"supervised"`
 	TLS
 }
 
@@ -85,6 +87,22 @@ var (
 	DefaultGlobalConfig Config
 )
 
+func printConfig() error {
+	var out bytes.Buffer
+	c, err := json.Marshal(DefaultGlobalConfig)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	err = json.Indent(&out, c, "", "  ")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Printf("your config is:%s\n", out.String())
+	return nil
+}
+
 func LoadConfig(path ...string) (*viper.Viper, error) {
 	var config string
 	// Command line > Environment variable > Default values
@@ -110,10 +128,12 @@ func LoadConfig(path ...string) (*viper.Viper, error) {
 	}
 	v.WatchConfig()
 	v.OnConfigChange(func(e fsnotify.Event) {
-		fmt.Println("config file changed:", e.Name)
+		fmt.Println("config file changed:", e.String())
 		if err := v.Unmarshal(&DefaultGlobalConfig); err != nil {
 			fmt.Println(err)
+			return
 		}
+		printConfig()
 	})
 	if err := v.Unmarshal(&DefaultGlobalConfig); err != nil {
 		fmt.Println(err)
@@ -121,18 +141,9 @@ func LoadConfig(path ...string) (*viper.Viper, error) {
 	}
 
 	fmt.Println("init config finished")
-	var out bytes.Buffer
-	c, err := json.Marshal(DefaultGlobalConfig)
+	err = printConfig()
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
-	err = json.Indent(&out, c, "", "  ")
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	fmt.Printf("your config is:%s\n", out.String())
-
 	return v, nil
 }

@@ -46,47 +46,6 @@ const (
 	fieldColumnName = "field"
 )
 
-// HSet hash set
-func (s *Storage) HSet(ctx context.Context, db int64, key []byte, fieldValue map[string][]byte) (int, error) {
-	tableName := hashTableName
-
-	// Create batch executor
-	batchExecutor := s.cli.NewBatchExecutor(tableName)
-
-	// Add operations
-	for field, value := range fieldValue {
-		// Set rowKey columns
-		rowKey := []*table.Column{
-			table.NewColumn(dbColumnName, db),
-			table.NewColumn(keyColumnName, key),
-			table.NewColumn(fieldColumnName, field),
-		}
-
-		// Set other columns
-		mutates := []*table.Column{
-			table.NewColumn(valueColumnName, value),
-		}
-
-		batchExecutor.AddInsertOrUpdateOp(rowKey, mutates)
-	}
-
-	// // Execute
-	// res, err := batchExecutor.Execute(ctx)
-	// if err != nil {
-	// 	return -1, err
-	// }
-
-	// Static insert size
-	insertSize := 0
-	// for _, singleResult := range res.GetResults() {
-	// 	if !singleResult.IsInsertOrUpdateDoUpdate() {
-	// 		insertSize++
-	// 	}
-	// }
-
-	return insertSize, nil
-}
-
 // HGet hash get
 func (s *Storage) HGet(ctx context.Context, db int64, key []byte, field []byte) ([]byte, error) {
 	tableName := hashTableName

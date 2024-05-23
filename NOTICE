@@ -30,3 +30,6 @@ by Facebook, Inc., licensed under the MIT License.
 
 This product contains software (https://github.com/pkg/errors) developed
 by Dave Cheney <dave@cheney.net>, licensed under the BSD 2-Clause License.
+
+This product contains software (https://github.com/go-mysql-org/go-mysql) developed
+by siddontang, licensed under the MIT License.

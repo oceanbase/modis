@@ -17,7 +17,6 @@
 package server
 
 import (
-	"bufio"
 	"bytes"
 	"io"
 	"runtime/debug"
@@ -38,13 +37,11 @@ import (
 type RedisCodec struct {
 	CodecCtx *conncontext.CodecContext
 	ServCtx  *conncontext.ServerContext
-	Reader   *bufio.Reader
 }
 
 // NewRedisCodec creates a new client
 func NewRedisCodec(codecCtx *conncontext.CodecContext, servCtx *conncontext.ServerContext) *RedisCodec {
-	client := &RedisCodec{CodecCtx: codecCtx, ServCtx: servCtx, Reader: bufio.NewReader(codecCtx.Conn)}
-	client.CodecCtx.StartTime = time.Now()
+	client := &RedisCodec{CodecCtx: codecCtx, ServCtx: servCtx}
 	return client
 }
 
@@ -54,7 +51,7 @@ func (rs *RedisCodec) GetCloseChan() *chan struct{} {
 
 // ReadRequest implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) ReadRequest(req *obkvrpc.Request) error {
-	args, err := rs.readCommand()
+	args, err := rs.readCommand(&req.PlainReq)
 	if err != nil {
 		log.Warn("server", req.ID, "fail to read command", log.Errors(err))
 		return err
@@ -86,16 +83,20 @@ func (rs *RedisCodec) WriteResponse(resp *obkvrpc.Response) error {
 			return err
 		}
 	}
+	rs.ServCtx.TotalWriteBytes.Inc(int64(len(resp.RspContent)))
 	return nil
 }
 
 // Call implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
-	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, rs.CodecCtx, rs.ServCtx)
+	rs.CodecCtx.LastCmdTime = time.Now()
+	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, req.PlainReq, rs.CodecCtx, rs.ServCtx)
 	command.Call(ctx)
 
 	resp.ID = ctx.TraceID
 	resp.RspContent = []byte(ctx.OutContent)
+	rs.ServCtx.TotalCmdNum.Inc(1)
+	rs.CodecCtx.QueNum.Add(-1)
 	return nil
 }
 
@@ -108,10 +109,14 @@ func (rs *RedisCodec) Close() {
 			log.Errors(err), log.Int64("ID", rs.CodecCtx.ID),
 			log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()))
 	}
+	rs.ServCtx.ClientNum--
+	delete(rs.ServCtx.Clients, rs.CodecCtx.ID)
 }
 
-func (rs *RedisCodec) readCommand() ([][]byte, error) {
-	buf, err := rs.Reader.ReadBytes('\n')
+func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
+	lastReadBytes := *rs.CodecCtx.TotalBytes
+	buf, err := rs.CodecCtx.Reader.ReadBytes('\n')
+	*plainReq = append(*plainReq, buf...)
 	if err != nil {
 		log.Warn("server", nil, "fail to read bytes", log.Errors(err))
 		return nil, err
@@ -137,15 +142,24 @@ func (rs *RedisCodec) readCommand() ([][]byte, error) {
 	if argc == 0 {
 		return [][]byte{}, nil
 	}
-
+	rs.CodecCtx.LastArgvLen = 0
 	argv := make([][]byte, argc)
 	for i := 0; i < argc; i++ {
-		arg, err := resp.ReadBulkString(rs.Reader)
+		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader, plainReq)
 		if err != nil {
 			log.Warn("server", nil, "fail to read bulk string", log.Errors(err))
 			return nil, err
 		}
 		argv[i] = arg
+		rs.CodecCtx.LastArgvLen += int64(len(arg))
+		log.Debug("server", nil, "read command", log.Int("arg idx", i), log.String("val", string(arg)))
 	}
+	rs.CodecCtx.TotalArgvLen += rs.CodecCtx.LastArgvLen
+	rs.ServCtx.TotalReadBytes.Inc((*rs.CodecCtx.TotalBytes) - lastReadBytes)
+	rs.CodecCtx.QueNum.Add(1)
 	return argv, nil
+}
+
+func (rs *RedisCodec) GetNormalErrMsg() []byte {
+	return []byte(resp.ErrUnknown())
 }

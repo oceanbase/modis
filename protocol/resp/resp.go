@@ -18,6 +18,7 @@ package resp
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"io"
 	"strconv"
@@ -124,8 +125,8 @@ type Reply interface {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ReadBulkString reads a bulkstring
-func ReadBulkString(r *bufio.Reader) ([]byte, error) {
-	return NewDecoder(r).BulkString()
+func ReadBulkString(r *bufio.Reader, plainReq *[]byte) ([]byte, error) {
+	return NewDecoder(r).BulkString(plainReq)
 }
 
 // Decoder implements the decoder interface
@@ -139,12 +140,13 @@ func NewDecoder(r *bufio.Reader) *Decoder {
 }
 
 // BulkString parses a RESP bulkstring
-func (r *Decoder) BulkString() ([]byte, error) {
+func (r *Decoder) BulkString(plainReq *[]byte) ([]byte, error) {
 	line, err := r.bufReader.ReadBytes('\n')
 	if err != nil {
 		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
 		return nil, err
 	}
+	*plainReq = append(*plainReq, line...)
 	l := len(line)
 	if l < len("$*\r\n") || line[l-2] != '\r' || line[0] != '$' {
 		return nil, ErrInvalidProtocol
@@ -162,5 +164,33 @@ func (r *Decoder) BulkString() ([]byte, error) {
 		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
 		return nil, ErrInvalidProtocol
 	}
+	*plainReq = append(*plainReq, body[:len(body)-2]...)
+	*plainReq = append(*plainReq, []byte{'\r', '\n'}...)
 	return body[:len(body)-2], nil
+}
+
+func (r *Decoder) Integer() (int, error) {
+	line, err := r.bufReader.ReadBytes('\n')
+	if err != nil {
+		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
+		return 0, err
+	}
+
+	l := len(line)
+	if l < len("$*\r\n") || line[l-2] != '\r' || line[0] != ':' {
+		return 0, ErrInvalidProtocol
+	}
+
+	retInt, err := strconv.Atoi(util.BytesToString(line[1 : l-2]))
+	if err != nil {
+		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
+		return 0, ErrInvalidProtocol
+	}
+	return retInt, nil
+}
+
+func DecInteger(msg string) (int, error) {
+	d := NewDecoder(bufio.NewReader(bytes.NewBufferString(msg)))
+	val, err := d.Integer()
+	return val, err
 }

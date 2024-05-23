@@ -567,6 +567,6 @@ func (s *Storage) ttlString(ctx context.Context, db int64, key []byte) (time.Dur
 	}
 
 	expire := res.Value(expireColumnName)
-	sub := expire.(time.Time).Sub(time.Now())
+	sub := time.Until(expire.(time.Time))
 	return sub, nil
 }

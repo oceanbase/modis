@@ -22,6 +22,7 @@ import (
 
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/storage/obkv"
+	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
 type Storage interface {
@@ -50,7 +51,6 @@ type Storage interface {
 	GetSet(ctx context.Context, db int64, key []byte, value []byte) ([]byte, error)
 
 	// hash commands
-	HSet(ctx context.Context, db int64, key []byte, fieldValue map[string][]byte) (int, error)
 	HSetNx(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int, error)
 	HMGet(ctx context.Context, db int64, key []byte, fields [][]byte) ([][]byte, error)
 	HGet(ctx context.Context, db int64, key []byte, field []byte) ([]byte, error)
@@ -68,15 +68,15 @@ type Storage interface {
 	SIsmember(ctx context.Context, db int64, key []byte, member []byte) (int, error)
 	SMembers(ctx context.Context, db int64, key []byte) ([][]byte, error)
 	Smove(ctx context.Context, db int64, src []byte, dst []byte, member []byte) (int, error)
-	SPop(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
-	SRandMember(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error)
+	SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
+	SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
 	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
 
-	// zset commands
-	ZAdd(ctx context.Context, db int64, key []byte, memberScore map[string]int64) (int, error)
-	ZRange(ctx context.Context, db int64, key []byte, start int64, end int64, withScore bool) ([][]byte, error)
-	ZCard(ctx context.Context, db int64, key []byte) (int, error)
-	ZRem(ctx context.Context, db int64, key []byte, members [][]byte) (int, error)
+	// server commands
+	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
+
+	// general interface for commands that can be executed on the observer side
+	ObServerCmd(ctx context.Context, tableName string, rowKey []*table.Column, plainText []byte) (string, error)
 
 	Close() error
 }

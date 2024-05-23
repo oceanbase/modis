@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package key
+package connection
 
 import (
 	"os"
@@ -34,18 +34,13 @@ func setup() {
 
 	test.CreateDB()
 
-	test.CreateTable(testModisStringCreateStatement)
-	test.CreateTable(testModisHashCreateStatement)
-	test.CreateTable(testModisSetCreateStatement)
-	test.CreateTable(testModisZSetCreateStatement)
-	test.CreateTable(testModisListCreateStatement)
-	test.ClearDb(0, rCli, testModisSetTableName, testModisStringTableName, testModisHashTableName, testModisZSetTableName, testModisListTableName)
+	//  test.CreateTable(testModisHashCreateStatement)
+	//  test.ClearDb(0, rCli, testModisHashTableName)
 }
 
 func teardown() {
 	rCli.Close()
 	mCli.Close()
-
 	test.CloseDB()
 }
 

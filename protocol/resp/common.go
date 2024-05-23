@@ -16,6 +16,11 @@
 
 package resp
 
+import (
+	"fmt"
+	"math"
+)
+
 const (
 	SimpleErrFlag = "-"
 	SimpleStrFlag = "+"
@@ -49,4 +54,16 @@ func ErrUnKnownCommand(cmd string) string {
 // ErrWrongArgs return RedisError of the cmd
 func ErrWrongArgs(cmd string) string {
 	return "-ERR wrong number of arguments for '" + cmd + "' command\r\n"
+}
+
+func ErrOutRange(min int64, max int64) string {
+	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", min, max)
+}
+
+func ErrOutRangeDefault() string {
+	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", math.MaxInt, math.MinInt)
+}
+
+func ErrUnknown() string {
+	return "-ERR error occurred in obkv go client"
 }

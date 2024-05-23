@@ -18,21 +18,73 @@ package obkv
 
 import (
 	"context"
+	"math"
 	"time"
 
+	"github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/obkv-table-client-go/table"
+)
+
+const (
+	listTableName = "modis_list_table"
 )
 
 // listExists check the number of keys that exist in list table
 func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
-	// todo:impl
-	return 0, nil
+	var exist_key_count int64 = 0
+
+	for i := 0; i < len(keys); i++ {
+		len_cmd := [][]byte{[]byte("llen")}
+		len_cmd = append(len_cmd, keys[i])
+		len_cmd_str := resp.EncArray(len_cmd)
+
+		rowKey := []*table.Column{
+			table.NewColumn(dbColumnName, db),
+			table.NewColumn(keyColumnName, keys[i]),
+			table.NewColumn(indexColumnName, int64(math.MinInt64)),
+		}
+		list_len, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(len_cmd_str))
+		if err != nil {
+			return exist_key_count, err
+		}
+
+		len, err := resp.DecInteger(list_len)
+		if err != nil {
+			return exist_key_count, err
+		}
+		if len > 0 {
+			exist_key_count++
+		}
+
+	}
+
+	return exist_key_count, nil
 }
 
 // deleteList delete list table
 func (s *Storage) deleteList(ctx context.Context, db int64, keys [][]byte) (int64, error) {
-	// todo:impl
-	return 0, nil
+	var delete_key_count int64 = 0
+
+	for i := 0; i < len(keys); i++ {
+		trim_cmd := [][]byte{[]byte("ldel")}
+		trim_cmd = append(trim_cmd, keys[i])
+		trim_cmd_str := resp.EncArray(trim_cmd)
+
+		rowKey := []*table.Column{
+			table.NewColumn(dbColumnName, db),
+			table.NewColumn(keyColumnName, keys[i]),
+			table.NewColumn(indexColumnName, int64(math.MinInt64)),
+		}
+		res, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(trim_cmd_str))
+		if err != nil {
+			return delete_key_count, err
+		}
+		if res == resp.ResponsesOk {
+			delete_key_count++
+		}
+	}
+
+	return delete_key_count, nil
 }
 
 // expireList expire list table

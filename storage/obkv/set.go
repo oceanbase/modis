@@ -18,6 +18,7 @@ package obkv
 
 import (
 	"context"
+	"slices"
 	"time"
 
 	"github.com/oceanbase/obkv-table-client-go/client/option"
@@ -265,44 +266,9 @@ func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, m
 }
 
 // SPop randomly delete count members
-func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error) {
+func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error) {
 	tableName := setTableName
-
-	// 1. Query
-	// Prepare key range
-	startRowKey := []*table.Column{
-		table.NewColumn(dbColumnName, db),
-		table.NewColumn(keyColumnName, key),
-		table.NewColumn(memberColumnName, table.Min),
-	}
-	endRowKey := []*table.Column{
-		table.NewColumn(dbColumnName, db),
-		table.NewColumn(keyColumnName, key),
-		table.NewColumn(memberColumnName, table.Max),
-	}
-	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
-
-	// Create query
-	selectColumns := []string{memberColumnName}
-	resSet, err := s.cli.Query(
-		ctx,
-		tableName,
-		keyRanges,
-		option.WithQuerySelectColumns(selectColumns),
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer resSet.Close()
-
-	members := make([][]byte, 0, count+1)
-
-	// Get next row
-	res, err := resSet.Next()
-	for ; res != nil && err == nil && count != 0; res, err = resSet.Next() {
-		members = append(members, res.Value(memberColumnName).([]byte))
-		count -= 1
-	}
+	members, err := s.SRandMember(ctx, db, key, count)
 	if err != nil {
 		return nil, err
 	}
@@ -327,8 +293,11 @@ func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int64) (
 }
 
 // SRandMember randomly get count members
-func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count int64) ([][]byte, error) {
-	tableName := setTableName
+func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error) {
+	members := make([][]byte, 0, count)
+	if count == 0 {
+		return members, nil
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -344,6 +313,7 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
 
 	// Create query
+	tableName := setTableName
 	selectColumns := []string{memberColumnName}
 	resSet, err := s.cli.Query(
 		ctx,
@@ -356,14 +326,30 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 	}
 	defer resSet.Close()
 
-	members := make([][]byte, 0, count+1)
-
-	// Get next row
-	res, err := resSet.Next()
-	for ; res != nil && err == nil && count != 0; res, err = resSet.Next() {
-		members = append(members, res.Value(memberColumnName).([]byte))
-		count -= 1
+	cnt, err := s.SCard(ctx, db, key)
+	if err != nil {
+		return nil, err
 	}
+	res, err := resSet.Next()
+	var idxArr []int
+	if int64(count) < cnt {
+		idxArr = getRandomArray(0, int(cnt), count)
+		slices.Sort(idxArr)
+		curTargetIdx := 0
+		curIdx := 0
+		for ; res != nil && err == nil && curTargetIdx < len(idxArr); res, err = resSet.Next() {
+			if idxArr[curTargetIdx] == curIdx {
+				members = append(members, res.Value(memberColumnName).([]byte))
+				curTargetIdx++
+			}
+			curIdx += 1
+		}
+	} else {
+		for ; res != nil && err == nil; res, err = resSet.Next() {
+			members = append(members, res.Value(memberColumnName).([]byte))
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}

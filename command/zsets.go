@@ -17,110 +17,52 @@
 package command
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/oceanbase/modis/protocol/resp"
-	"github.com/oceanbase/modis/util"
+	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
-// ZAdd adds the specified members with scores to the sorted set
-func ZAdd(ctx *CmdContext) error {
-	key := []byte(ctx.Args[0])
+const (
+	zsetTableName = "modis_zset_table"
+)
 
-	kvs := ctx.Args[1:]
-	if len(kvs)%2 != 0 {
-		ctx.OutContent = resp.EncError("ERR syntax error")
-		return nil
+func ZSetCmdWithKey(ctx *CmdContext) error {
+	key := ctx.Args[0]
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, key),
 	}
-
-	uniqueMembers := make(map[string]bool)
-
-	memberScore := make(map[string]int64)
-
-	// 倒序，因为后面填的参数会覆盖前面
-	for i := len(kvs) - 1; i >= 0; i -= 2 {
-		member := kvs[i]
-		if _, ok := uniqueMembers[util.BytesToString(member)]; ok {
-			continue
-		}
-
-		score, err := strconv.ParseInt(util.BytesToString(kvs[i-1]), 10, 64)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR syntax error")
-			return nil
-		}
-
-		memberScore[util.BytesToString(member)] = score
-		uniqueMembers[util.BytesToString(member)] = true
-	}
-	returnValue, err := ctx.CodecCtx.DB.Storage.ZAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, memberScore)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(returnValue))
 	}
 	return nil
 }
 
-func ZRange(ctx *CmdContext) error {
-	key := []byte(ctx.Args[0])
-	start, err := strconv.ParseInt(util.BytesToString(ctx.Args[1]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR syntax error")
-		return nil
+func ZIncrBy(ctx *CmdContext) error {
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, ctx.Args[0]),
+		table.NewColumn(memberColumnName, ctx.Args[2]),
 	}
-	stop, err := strconv.ParseInt(util.BytesToString(ctx.Args[2]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR syntax error")
-		return nil
-	}
-	withScore := false
-	if len(ctx.Args) >= 4 {
-		if strings.ToUpper(util.BytesToString(ctx.Args[3])) == "WITHSCORES" {
-			withScore = true
-		}
-	}
-
-	returnValue, err := ctx.CodecCtx.DB.Storage.ZRange(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, start, stop, withScore)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncArray(returnValue)
 	}
 	return nil
 }
 
-func ZRem(ctx *CmdContext) error {
-	key := []byte(ctx.Args[0])
-
-	uniqueMembers := make(map[string]bool)
-	members := make([][]byte, 0, len(ctx.Args)-1)
-	for _, member := range ctx.Args[1:] {
-		if _, ok := uniqueMembers[util.BytesToString(member)]; ok {
-			continue
-		}
-
-		members = append(members, member)
-		uniqueMembers[util.BytesToString(member)] = true
+func ZSetCmdWithKeyMember(ctx *CmdContext) error {
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, ctx.Args[0]),
+		table.NewColumn(memberColumnName, ctx.Args[1]),
 	}
-
-	returnValue, err := ctx.CodecCtx.DB.Storage.ZRem(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, members)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(returnValue))
-	}
-	return nil
-}
-
-func ZCard(ctx *CmdContext) error {
-	key := []byte(ctx.Args[0])
-	returnValue, err := ctx.CodecCtx.DB.Storage.ZCard(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(returnValue))
 	}
 	return nil
 }

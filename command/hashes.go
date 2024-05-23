@@ -19,9 +19,14 @@ package command
 import (
 	"strconv"
 
+	"github.com/oceanbase/obkv-table-client-go/table"
 	"github.com/oceanbase/obkv-table-client-go/util"
 
 	"github.com/oceanbase/modis/protocol/resp"
+)
+
+const (
+	hashTableName = "modis_hash_table"
 )
 
 // HDel removes the specified fields from the hash stored at key
@@ -36,29 +41,6 @@ func HDel(ctx *CmdContext) error {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
 		ctx.OutContent = resp.EncInteger(deleteNum)
-	}
-	return nil
-}
-
-// HSet sets field in the hash stored at key to value
-func HSet(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	kvs := ctx.Args[1:]
-	if len(kvs)%2 != 0 {
-		ctx.OutContent = resp.EncError("ERR wrong number of arguments for HSET")
-	} else {
-		setValues := make(map[string][]byte, len(kvs)/2)
-		for i := 2; i <= len(kvs); i += 2 {
-			kv := kvs[i-2 : i]
-			setValues[util.BytesToString(kv[0])] = kv[1]
-		}
-
-		size, err := ctx.CodecCtx.DB.Storage.HSet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, setValues)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-		} else {
-			ctx.OutContent = resp.EncInteger(int64(size))
-		}
 	}
 	return nil
 }
@@ -221,25 +203,17 @@ func HMGet(ctx *CmdContext) error {
 	return nil
 }
 
-// HMSet sets the specified fields to their respective values in the hash stored at key
-func HMSet(ctx *CmdContext) error {
+// compat server
+func HashCmdWithKey(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	kvs := ctx.Args[1:]
-	if len(kvs)%2 != 0 {
-		ctx.OutContent = resp.EncError("ERR wrong number of arguments for HMSET")
-	} else {
-		setValues := make(map[string][]byte, len(kvs)/2)
-		for i := 2; i <= len(kvs); i += 2 {
-			kv := kvs[i-2 : i]
-			setValues[util.BytesToString(kv[0])] = kv[1]
-		}
-
-		_, err := ctx.CodecCtx.DB.Storage.HSet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, setValues)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-		} else {
-			ctx.OutContent = resp.ResponsesOk
-		}
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, key),
+	}
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, hashTableName, rowKey, ctx.PlainReq)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
 	return nil
 }

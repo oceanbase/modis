@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package key
+package zset
 
 import (
 	"os"
@@ -33,19 +33,15 @@ func setup() {
 	mCli = test.CreateModisClient()
 
 	test.CreateDB()
-
-	test.CreateTable(testModisStringCreateStatement)
-	test.CreateTable(testModisHashCreateStatement)
-	test.CreateTable(testModisSetCreateStatement)
 	test.CreateTable(testModisZSetCreateStatement)
-	test.CreateTable(testModisListCreateStatement)
-	test.ClearDb(0, rCli, testModisSetTableName, testModisStringTableName, testModisHashTableName, testModisZSetTableName, testModisListTableName)
+	test.ClearDb(0, rCli, testModisZSetTableName)
 }
 
 func teardown() {
 	rCli.Close()
 	mCli.Close()
 
+	// test.DropTable(testModisZSetTableName)
 	test.CloseDB()
 }
 

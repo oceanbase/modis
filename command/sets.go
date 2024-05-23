@@ -19,9 +19,14 @@ package command
 import (
 	"strconv"
 
+	"github.com/oceanbase/obkv-table-client-go/table"
 	"github.com/oceanbase/obkv-table-client-go/util"
 
 	"github.com/oceanbase/modis/protocol/resp"
+)
+
+const (
+	setTableName = "modis_set_table"
 )
 
 // SAdd adds the specified members to the set stored at key
@@ -67,7 +72,7 @@ func SRandMember(ctx *CmdContext) error {
 		}
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, int64(count))
+	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -119,7 +124,7 @@ func SPop(ctx *CmdContext) error {
 		}
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, int64(count))
+	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -287,6 +292,21 @@ func SDiff(ctx *CmdContext) error {
 
 	// 3. Return result
 	ctx.OutContent = resp.EncArray(members)
+	return nil
+}
+
+// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
+func SDiffServer(ctx *CmdContext) error {
+	firstKey := ctx.Args[0]
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, firstKey),
+	}
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, setTableName, rowKey, ctx.PlainReq)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	}
 	return nil
 }
 
