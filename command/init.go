@@ -138,7 +138,7 @@ func init() {
 		"linsert":   {Cmd: ListCmd, Arity: 5, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"llen":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"lrem":      {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"rpoplpush": {Cmd: ListCmd, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"rpoplpush": {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 	}
 
 	tables = []string{

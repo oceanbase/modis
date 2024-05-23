@@ -66,7 +66,7 @@ func (s *Storage) deleteList(ctx context.Context, db int64, keys [][]byte) (int6
 	var delete_key_count int64 = 0
 
 	for i := 0; i < len(keys); i++ {
-		trim_cmd := [][]byte{[]byte("ldel")}
+		trim_cmd := [][]byte{[]byte("ledl")}
 		trim_cmd = append(trim_cmd, keys[i])
 		trim_cmd_str := resp.EncArray(trim_cmd)
 

@@ -40,7 +40,7 @@ const (
 	testModisZSetCreateStatement = "create table if not exists modis_zset_table(db bigint not null, rkey varbinary(1024) not null, member varbinary(1024) not null, score double not null, expire_ts timestamp(6) default null, index index_score(score) local, primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND) partition by key(db, rkey) partitions 3;"
 
 	testModisListTableName       = "modis_list_table"
-	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, expire_ts timestamp(6) default null, primary key(db, rkey, `index`)) TTL(expire_ts + INTERVAL 0 SECOND) partition by key(db, rkey) partitions 3;"
+	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, expire_ts timestamp(6) default null, primary key(db, rkey, `index`)) partition by key(db, rkey) partitions 3;"
 )
 
 func deleteTable() {
