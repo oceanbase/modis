@@ -19,6 +19,7 @@ package key
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -55,8 +56,8 @@ func TestKey_Del(t *testing.T) {
 	field := "Field"
 	member := "Member"
 	score := 1.234
-	// element := "Element"
-	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	element := "Element"
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
 
 	// empty
 	delRedis, err := rCli.Del(context.TODO(), key).Result()
@@ -113,17 +114,17 @@ func TestKey_Del(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // list
-	// lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
-	// assert.Equal(t, nil, err)
-	// lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, lpushRedis, lpushModis)
-	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// delModis, err = mCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, delRedis, delModis)
+	// list
+	lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, lpushRedis, lpushModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 }
 
 func TestKey_Exists(t *testing.T) {
@@ -132,8 +133,8 @@ func TestKey_Exists(t *testing.T) {
 	field := "Field"
 	member := "Member"
 	score := 1.234
-	// element := "Element"
-	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	element := "Element"
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
 
 	// empty
 	existsRedis, err := rCli.Exists(context.TODO(), key).Result()
@@ -210,22 +211,22 @@ func TestKey_Exists(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // list
-	// lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
-	// assert.Equal(t, nil, err)
-	// lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, lpushRedis, lpushModis)
-	// existsRedis, err = rCli.Exists(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// existsModis, err = mCli.Exists(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, existsRedis, existsModis)
-	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// delModis, err = mCli.Del(context.TODO(), key).Result()
-	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, delRedis, delModis)
+	// list
+	lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, lpushRedis, lpushModis)
+	existsRedis, err = rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existsModis, err = mCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existsRedis, existsModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 }
 
 func TestKey_Type(t *testing.T) {
@@ -234,8 +235,8 @@ func TestKey_Type(t *testing.T) {
 	field := "Field"
 	member := "Member"
 	score := 1.234
-	// element := "Element"
-	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+	element := "Element"
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
 
 	// empty
 	typeRedis, err := rCli.Type(context.TODO(), key).Result()
@@ -312,17 +313,399 @@ func TestKey_Type(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, delRedis, delModis)
 
-	// // list
-	// lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
+	// list
+	lpushRedis, err := rCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, lpushRedis, lpushModis)
+	typeRedis, err = rCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	typeModis, err = mCli.Type(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, typeRedis, typeModis)
+	delRedis, err = rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err = mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
+}
+
+func TestKey_Expire(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := time.Second * 1
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
+
+	// empty
+	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	time.Sleep(expiration)
+	existRedis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existModis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existRedis, existModis)
+
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
 	// assert.Equal(t, nil, err)
-	// lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
 	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, lpushRedis, lpushModis)
-	// typeRedis, err = rCli.Type(context.TODO(), key).Result()
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
 	// assert.Equal(t, nil, err)
-	// typeModis, err = mCli.Type(context.TODO(), key).Result()
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
 	// assert.Equal(t, nil, err)
-	// assert.EqualValues(t, typeRedis, typeModis)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hexistRedis, hexistModis)
+
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ismemRedis, ismemModis)
+}
+
+func TestKey_ExpireAt(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := 1 * time.Second
+	tm := time.Now().Add(expiration)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
+
+	// empty
+	expireRedis, err := rCli.ExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.ExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	time.Sleep(expiration)
+	existRedis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existModis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existRedis, existModis)
+
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hexistRedis, hexistModis)
+
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ismemRedis, ismemModis)
+}
+
+func TestKey_PExpire(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := 1000 * time.Microsecond
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
+
+	// empty
+	expireRedis, err := rCli.PExpire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.PExpire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	time.Sleep(expiration)
+	existRedis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existModis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existRedis, existModis)
+
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hexistRedis, hexistModis)
+
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ismemRedis, ismemModis)
+}
+
+func TestKey_PExpireAt(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := 1000 * time.Microsecond
+	tm := time.Now().Add(expiration)
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
+
+	// empty
+	expireRedis, err := rCli.PExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.PExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	time.Sleep(expiration)
+	existRedis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existModis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existRedis, existModis)
+
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hexistRedis, hexistModis)
+
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// time.Sleep(expiration)
+	// ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ismemRedis, ismemModis)
+}
+
+func TestKey_Persist(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := time.Second * 1
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
+
+	// empty
+	persistRedis, err := rCli.Persist(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	persistModis, err := mCli.Persist(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, persistRedis, persistModis)
+
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	persistRedis, err = rCli.Persist(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	persistModis, err = mCli.Persist(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, persistRedis, persistModis)
+	time.Sleep(expiration)
+	existRedis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	existModis, err := rCli.Exists(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, existRedis, existModis)
+	delRedis, err := rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err := mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
+
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// persistRedis, err = rCli.Persist(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// persistModis, err = mCli.Persist(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, persistRedis, persistModis)
+	// time.Sleep(expiration)
+	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hexistRedis, hexistModis)
+	// delRedis, err = rCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// delModis, err = mCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, delRedis, delModis)
+
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// persistRedis, err = rCli.Persist(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// persistModis, err = mCli.Persist(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, persistRedis, persistModis)
+	// time.Sleep(expiration)
+	// ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ismemRedis, ismemModis)
 	// delRedis, err = rCli.Del(context.TODO(), key).Result()
 	// assert.Equal(t, nil, err)
 	// delModis, err = mCli.Del(context.TODO(), key).Result()
@@ -330,548 +713,166 @@ func TestKey_Type(t *testing.T) {
 	// assert.EqualValues(t, delRedis, delModis)
 }
 
-// func TestKey_Expire(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := time.Second * 1
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+func TestKey_TTL(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := time.Second * 10
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
 
-// 	// empty
-// 	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
+	// empty
+	ttlRedis, err := rCli.TTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	ttlModis, err := mCli.TTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, ttlRedis, ttlModis)
 
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	existRedis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	existModis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, existRedis, existModis)
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	ttlModis, err = mCli.TTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, ttlRedis, ttlModis)
+	delRedis, err := rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err := mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// time.Sleep(expiration)
-// 	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hexistRedis, hexistModis)
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// ttlModis, err = mCli.TTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ttlRedis, ttlModis)
+	// delRedis, err = rCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// delModis, err = mCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, delRedis, delModis)
 
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ismemRedis, ismemModis)
-// }
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// ttlModis, err = mCli.TTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, ttlRedis, ttlModis)
+	// delRedis, err = rCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// delModis, err = mCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, delRedis, delModis)
+}
 
-// func TestKey_ExpireAt(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := 1 * time.Second
-// 	tm := time.Now().Add(expiration)
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
+func TestKey_PTTL(t *testing.T) {
+	key := "Key"
+	value := "Value"
+	// field := "Field"
+	// member := "Member"
+	expiration := time.Second * 10
+	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName, testModisZSetTableName, testModisListTableName)
 
-// 	// empty
-// 	expireRedis, err := rCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
+	// empty
+	ttlRedis, err := rCli.PTTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	ttlModis, err := mCli.PTTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, ttlRedis, ttlModis)
 
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	existRedis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	existModis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, existRedis, existModis)
+	// string
+	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, setRedis, setModis)
+	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, expireRedis, expireModis)
+	ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
+	delRedis, err := rCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	delModis, err := mCli.Del(context.TODO(), key).Result()
+	assert.Equal(t, nil, err)
+	assert.EqualValues(t, delRedis, delModis)
 
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// time.Sleep(expiration)
-// 	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hexistRedis, hexistModis)
+	// // hash
+	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, hsetRedis, hsetModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
+	// delRedis, err = rCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// delModis, err = mCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, delRedis, delModis)
 
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.ExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ismemRedis, ismemModis)
-// }
-
-// func TestKey_PExpire(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := 1000 * time.Microsecond
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
-
-// 	// empty
-// 	expireRedis, err := rCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	existRedis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	existModis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, existRedis, existModis)
-
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// time.Sleep(expiration)
-// 	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hexistRedis, hexistModis)
-
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.PExpire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ismemRedis, ismemModis)
-// }
-
-// func TestKey_PExpireAt(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := 1000 * time.Microsecond
-// 	tm := time.Now().Add(expiration)
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
-
-// 	// empty
-// 	expireRedis, err := rCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	existRedis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	existModis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, existRedis, existModis)
-
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// time.Sleep(expiration)
-// 	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hexistRedis, hexistModis)
-
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.PExpireAt(context.TODO(), key, tm).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	time.Sleep(expiration)
-// 	ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ismemRedis, ismemModis)
-// }
-
-// func TestKey_Persist(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := time.Second * 1
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
-
-// 	// empty
-// 	persistRedis, err := rCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	persistModis, err := mCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, persistRedis, persistModis)
-
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	persistRedis, err = rCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	persistModis, err = mCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, persistRedis, persistModis)
-// 	time.Sleep(expiration)
-// 	existRedis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	existModis, err := rCli.Exists(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, existRedis, existModis)
-// 	delRedis, err := rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err := mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// persistRedis, err = rCli.Persist(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// persistModis, err = mCli.Persist(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, persistRedis, persistModis)
-// 	// time.Sleep(expiration)
-// 	// hexistRedis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hexistModis, err := rCli.HExists(context.TODO(), key, field).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hexistRedis, hexistModis)
-// 	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, delRedis, delModis)
-
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	persistRedis, err = rCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	persistModis, err = mCli.Persist(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, persistRedis, persistModis)
-// 	time.Sleep(expiration)
-// 	ismemRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	ismemModis, err := rCli.SIsMember(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ismemRedis, ismemModis)
-// 	delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-// }
-
-// func TestKey_TTL(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := time.Second * 10
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
-
-// 	// empty
-// 	ttlRedis, err := rCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err := mCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ttlRedis, ttlModis)
-
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err = mCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ttlRedis, ttlModis)
-// 	delRedis, err := rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err := mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// ttlModis, err = mCli.TTL(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, ttlRedis, ttlModis)
-// 	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, delRedis, delModis)
-
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	ttlRedis, err = rCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err = mCli.TTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ttlRedis, ttlModis)
-// 	delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-// }
-
-// func TestKey_PTTL(t *testing.T) {
-// 	key := "Key"
-// 	value := "Value"
-// 	// field := "Field"
-// 	member := "Member"
-// 	expiration := time.Second * 10
-// 	defer test.ClearDb(0, rCli, testModisStringTableName, testModisHashTableName, testModisSetTableName)
-
-// 	// empty
-// 	ttlRedis, err := rCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err := mCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, ttlRedis, ttlModis)
-
-// 	// string
-// 	setRedis, err := rCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	setModis, err := mCli.Set(context.TODO(), key, value, 0).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, setRedis, setModis)
-// 	expireRedis, err := rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err := mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
-// 	delRedis, err := rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err := mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-
-// 	// // hash
-// 	// hsetRedis, err := rCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// hsetModis, err := mCli.HSet(context.TODO(), key, field, value).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, hsetRedis, hsetModis)
-// 	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, expireRedis, expireModis)
-// 	// ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
-// 	// delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	// assert.Equal(t, nil, err)
-// 	// assert.EqualValues(t, delRedis, delModis)
-
-// 	// set
-// 	saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, saddRedis, saddModis)
-// 	expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, expireRedis, expireModis)
-// 	ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
-// 	delRedis, err = rCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	delModis, err = mCli.Del(context.TODO(), key).Result()
-// 	assert.Equal(t, nil, err)
-// 	assert.EqualValues(t, delRedis, delModis)
-// }
+	// // set
+	// saddRedis, err := rCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, saddRedis, saddModis)
+	// expireRedis, err = rCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// expireModis, err = mCli.Expire(context.TODO(), key, expiration).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, expireRedis, expireModis)
+	// ttlRedis, err = rCli.PTTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// ttlModis, err = mCli.PTTL(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, 0, int64(ttlRedis.Seconds()-ttlModis.Seconds()))
+	// delRedis, err = rCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// delModis, err = mCli.Del(context.TODO(), key).Result()
+	// assert.Equal(t, nil, err)
+	// assert.EqualValues(t, delRedis, delModis)
+}

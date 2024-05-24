@@ -18,6 +18,7 @@ package obkv
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/oceanbase/obkv-table-client-go/table"
@@ -80,18 +81,21 @@ func (s *Storage) Exists(ctx context.Context, db int64, keys [][]byte) (int64, e
 		return 0, err
 	}
 	existsNum += num
+	fmt.Println(num)
 
 	num, err = s.hashExists(ctx, db, keys)
 	if err != nil {
 		return 0, err
 	}
 	existsNum += num
+	fmt.Println(num)
 
 	num, err = s.listExists(ctx, db, keys)
 	if err != nil {
 		return 0, err
 	}
 	existsNum += num
+	fmt.Println(num)
 
 	num, err = s.zsetExists(ctx, db, keys)
 	if err != nil {
@@ -104,6 +108,7 @@ func (s *Storage) Exists(ctx context.Context, db int64, keys [][]byte) (int64, e
 		return 0, err
 	}
 	existsNum += num
+	fmt.Println(num)
 
 	return existsNum, nil
 }
@@ -158,41 +163,41 @@ func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time
 		return res, nil
 	}
 
-	// expire hash
-	res, err = s.expireHash(ctx, db, key, table.TimeStamp(at))
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // expire hash
+	// res, err = s.expireHash(ctx, db, key, table.TimeStamp(at))
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// expire list
-	res, err = s.expireList(ctx, db, key, table.TimeStamp(at))
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // expire list
+	// res, err = s.expireList(ctx, db, key, table.TimeStamp(at))
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// expire zset
-	res, err = s.expireZSet(ctx, db, key, table.TimeStamp(at))
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // expire zset
+	// res, err = s.expireZSet(ctx, db, key, table.TimeStamp(at))
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// expire set
-	res, err = s.expireSet(ctx, db, key, table.TimeStamp(at))
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // expire set
+	// res, err = s.expireSet(ctx, db, key, table.TimeStamp(at))
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
 	return 0, nil
 }
@@ -211,41 +216,41 @@ func (s *Storage) Persist(ctx context.Context, db int64, key []byte) (int, error
 		return res, nil
 	}
 
-	// persist hash
-	res, err = s.persistHash(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // persist hash
+	// res, err = s.persistHash(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// persist list
-	res, err = s.persistList(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // persist list
+	// res, err = s.persistList(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// persist zset
-	res, err = s.persistZSet(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // persist zset
+	// res, err = s.persistZSet(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
-	// persist set
-	res, err = s.persistSet(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
-	}
+	// // persist set
+	// res, err = s.persistSet(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if res != 0 {
+	// 	return res, nil
+	// }
 
 	return 0, nil
 }
@@ -260,41 +265,41 @@ func (s *Storage) TTL(ctx context.Context, db int64, key []byte) (time.Duration,
 		return sub, nil
 	}
 
-	// ttl hash
-	sub, err = s.ttlHash(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if sub >= -1 {
-		return sub, nil
-	}
+	// // ttl hash
+	// sub, err = s.ttlHash(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if sub >= -1 {
+	// 	return sub, nil
+	// }
 
-	// ttl list
-	sub, err = s.ttlList(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if sub >= -1 {
-		return sub, nil
-	}
+	// // ttl list
+	// sub, err = s.ttlList(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if sub >= -1 {
+	// 	return sub, nil
+	// }
 
-	// ttl zset
-	sub, err = s.ttlZSet(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if sub >= -1 {
-		return sub, nil
-	}
+	// // ttl zset
+	// sub, err = s.ttlZSet(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if sub >= -1 {
+	// 	return sub, nil
+	// }
 
-	// ttl set
-	sub, err = s.ttlSet(ctx, db, key)
-	if err != nil {
-		return 0, err
-	}
-	if sub >= -1 {
-		return sub, nil
-	}
+	// // ttl set
+	// sub, err = s.ttlSet(ctx, db, key)
+	// if err != nil {
+	// 	return 0, err
+	// }
+	// if sub >= -1 {
+	// 	return sub, nil
+	// }
 
 	return -2, nil
 }
