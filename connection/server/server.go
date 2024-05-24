@@ -82,22 +82,25 @@ func (s *Server) Close() {
 func (s *Server) SignalHandle(gnet *gracenet.Net, sigChan chan os.Signal) {
 	log.Debug("server", nil, "start to wait signals")
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP)
-	sig := <-sigChan
-	switch sig {
-	case syscall.SIGTERM, syscall.SIGINT:
-		log.Info("server", nil, "receive SIGTERM/SIGINT, stop server")
-		signal.Stop(sigChan)
-		s.Close()
-	case syscall.SIGHUP:
-		// restart
-		pid, err := gnet.StartProcess()
-		if err != nil {
-			log.Warn("server", nil, "fail to restart process", log.Errors(err), log.Int("pid", pid))
-		} else {
-			log.Info("server", nil, "success to restart process", log.Errors(err), log.Int("pid", pid))
+	for {
+		sig := <-sigChan
+		log.Debug("server", nil, "receive signal", log.Any("signal", sig))
+		switch sig {
+		case syscall.SIGTERM, syscall.SIGINT:
+			log.Info("server", nil, "receive SIGTERM/SIGINT, stop server")
+			signal.Stop(sigChan)
+			s.Close()
+		case syscall.SIGHUP:
+			// restart
+			pid, err := gnet.StartProcess()
+			if err != nil {
+				log.Warn("server", nil, "fail to restart process", log.Errors(err), log.Int("pid", pid))
+			} else {
+				log.Info("server", nil, "success to restart process", log.Errors(err), log.Int("pid", pid))
+			}
+			signal.Stop(sigChan)
+			s.Close()
 		}
-		signal.Stop(sigChan)
-		s.Close()
 	}
 }
 
@@ -131,6 +134,9 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		s.ServCtx.TotalClientNum++
 		cliID := s.IDGenerator()
 		cliCtx := conncontext.NewCodecCtx(conn, cliID, db, maxQueueCmd)
+		log.Debug("server", nil, "succ to accept a new connection",
+			log.String("addr", s.Listener.Addr().String()),
+			log.Int64("client id", cliID))
 		s.ServCtx.Clients[cliID] = cliCtx
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
 		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
