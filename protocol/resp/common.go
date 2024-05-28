@@ -37,7 +37,6 @@ const (
 
 	// Shared command error responses
 	ResponsesNoautherr      = "-NOAUTH Authentication required.\r\n"
-	ResponsesExpireSetExErr = "-ERR invalid expire time in setex\r\n"
 	ResponseIntegerErr      = "-ERR value is not an integer or out of range\r\n"
 	ResponseFloatErr        = "-ERR value is not a valid float\r\n"
 	ResponseBitIntegerErr   = "-ERR bit is not an integer or out of range\r\n"
@@ -64,6 +63,10 @@ func ErrOutRangeDefault() string {
 	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", math.MaxInt, math.MinInt)
 }
 
-func ErrUnknown() string {
+func ErrRedisCodec() string {
 	return "-ERR error occurred in obkv go client"
+}
+
+func ErrInvalidExpire(funcName string) string {
+	return "-ERR invalid expire time in" + funcName + "\r\n"
 }

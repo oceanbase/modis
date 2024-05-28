@@ -112,6 +112,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		log.Error("server", nil, "fail to create new OBKV RPC server", log.Errors(err))
 		return err
 	}
+	defer obkvServer.Close()
 	s.ServCtx.StartMetricsTicker()
 	for { // until Accept() return error
 		conn, err := s.Listener.Accept()

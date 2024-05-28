@@ -155,7 +155,7 @@ func SetEx(ctx *CmdContext) error {
 		return nil
 	}
 	if ui <= 0 {
-		ctx.OutContent = resp.ResponsesExpireSetExErr
+		ctx.OutContent = resp.ErrInvalidExpire(ctx.FullName)
 		return nil
 	}
 	expireTimes := ui * uint64(time.Second)
@@ -176,6 +176,10 @@ func PSetEx(ctx *CmdContext) error {
 	ui, err := strconv.ParseUint(util.BytesToString(ctx.Args[1]), 10, 64)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	}
+	if ui <= 0 {
+		ctx.OutContent = resp.ErrInvalidExpire(ctx.FullName)
+		return nil
 	}
 	expireTimeMs := ui * uint64(time.Millisecond)
 

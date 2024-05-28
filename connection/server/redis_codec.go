@@ -102,7 +102,7 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 
 // Close implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) Close() {
-	log.Info("server", nil, "close RPC Server", log.String("stack", string(debug.Stack())))
+	log.Debug("server", nil, "close RPC Server", log.String("stack", string(debug.Stack())))
 	err := rs.CodecCtx.Conn.Close()
 	if err != nil {
 		log.Warn("server", "", "fail to close client connection",
@@ -161,5 +161,5 @@ func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
 }
 
 func (rs *RedisCodec) GetNormalErrMsg() []byte {
-	return []byte(resp.ErrUnknown())
+	return []byte(resp.ErrRedisCodec())
 }
