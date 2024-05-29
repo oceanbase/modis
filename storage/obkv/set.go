@@ -366,7 +366,7 @@ func (s *Storage) setExists(ctx context.Context, db int64, keys [][]byte) (int64
 			return 0, err
 		}
 
-		if num != 0 {
+		if num > 0 {
 			existNum += 1
 		}
 	}

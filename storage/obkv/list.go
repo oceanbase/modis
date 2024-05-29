@@ -32,18 +32,19 @@ const (
 // listExists check the number of keys that exist in list table
 func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var exist_key_count int64 = 0
+	plainArray := make([][]byte, 2)
+	plainArray[0] = []byte("llen")
 
 	for i := 0; i < len(keys); i++ {
-		len_cmd := [][]byte{[]byte("llen")}
-		len_cmd = append(len_cmd, keys[i])
-		len_cmd_str := resp.EncArray(len_cmd)
+		plainArray[1] = keys[i]
+		encodedArray := resp.EncArray(plainArray)
 
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, keys[i]),
 			table.NewColumn(indexColumnName, int64(math.MinInt64)),
 		}
-		list_len, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(len_cmd_str))
+		list_len, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(encodedArray))
 		if err != nil {
 			return exist_key_count, err
 		}
@@ -64,20 +65,21 @@ func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int6
 // deleteList delete list table
 func (s *Storage) deleteList(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var delete_key_count int64 = 0
+	plainArray := make([][]byte, 2)
+	plainArray[0] = []byte("ledl")
 
 	for i := 0; i < len(keys); i++ {
-		trim_cmd := [][]byte{[]byte("ledl")}
-		trim_cmd = append(trim_cmd, keys[i])
-		trim_cmd_str := resp.EncArray(trim_cmd)
+		plainArray[1] = keys[i]
+		encodedArray := resp.EncArray(plainArray)
 
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, keys[i]),
 			table.NewColumn(indexColumnName, int64(math.MinInt64)),
 		}
-		res, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(trim_cmd_str))
+		res, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(encodedArray))
 		if err != nil {
-			return delete_key_count, err
+			continue
 		}
 		if res == resp.ResponsesOk {
 			delete_key_count++
