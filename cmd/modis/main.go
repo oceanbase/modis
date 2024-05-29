@@ -20,7 +20,6 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"runtime/debug"
 
 	// "net/http"
 	// _ "net/http/pprof"
@@ -40,11 +39,6 @@ var (
 )
 
 func main() {
-	defer func() {
-		if err := recover(); err != nil {
-			log.Error("main", nil, "modis panic, exit", log.Any("error", err), log.String("stack", string(debug.Stack())))
-		}
-	}()
 	// go func() {
 	// 	http.ListenAndServe(":6060", nil)
 	// }()
