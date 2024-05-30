@@ -18,6 +18,7 @@ package command
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/oceanbase/obkv-table-client-go/table"
 	"github.com/oceanbase/obkv-table-client-go/util"
@@ -122,7 +123,11 @@ func HIncrBy(ctx *CmdContext) error {
 
 	res, err := ctx.CodecCtx.DB.Storage.HIncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field, value)
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		if strings.Contains(err.Error(), "-4262") {
+			ctx.OutContent = resp.EncError("ERR " + err.Error())
+		} else {
+			ctx.OutContent = resp.EncError("ERR hash value is not an integer")
+		}
 	} else {
 		ctx.OutContent = resp.EncInteger(res)
 	}
@@ -144,7 +149,11 @@ func HIncrByFloat(ctx *CmdContext) error {
 
 	f64, err := ctx.CodecCtx.DB.Storage.HIncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field, value)
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		if strings.Contains(err.Error(), "-4262") {
+			ctx.OutContent = resp.EncError("ERR " + err.Error())
+		} else {
+			ctx.OutContent = resp.EncError("ERR hash value is not a float")
+		}
 	} else {
 		ctx.OutContent = resp.EncBulkString(strconv.FormatFloat(f64, 'f', -1, 64))
 	}
