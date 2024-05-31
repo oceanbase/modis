@@ -93,7 +93,7 @@ func init() {
 		// sets
 		"sadd":        {Cmd: SAdd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"smembers":    {Cmd: SMembers, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"srandmember": {Cmd: SRandMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"srandmember": {Cmd: SRandMember, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"scard":       {Cmd: SCard, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sismember":   {Cmd: SIsmember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"spop":        {Cmd: SPop, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},

@@ -41,7 +41,7 @@ func teardown() {
 	rCli.Close()
 	mCli.Close()
 
-	// test.DropTable(testModisZSetTableName)
+	test.TruncateTable(testModisZSetTableName)
 	test.CloseDB()
 }
 

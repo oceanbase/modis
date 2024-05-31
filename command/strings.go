@@ -197,7 +197,7 @@ func Incr(ctx *CmdContext) error {
 	key := []byte(ctx.Args[0])
 	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte("1"))
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
 		ctx.OutContent = resp.EncInteger(res)
 	}
@@ -217,7 +217,7 @@ func IncrBy(ctx *CmdContext) error {
 
 	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
 		ctx.OutContent = resp.EncInteger(res)
 	}
@@ -249,7 +249,7 @@ func Decr(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte("-1"))
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
 		ctx.OutContent = resp.EncInteger(res)
 	}
@@ -268,7 +268,7 @@ func DecrBy(ctx *CmdContext) error {
 
 	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte(strconv.FormatInt(-delta, 10)))
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
 		ctx.OutContent = resp.EncInteger(res)
 	}

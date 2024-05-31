@@ -320,6 +320,7 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 		tableName,
 		keyRanges,
 		option.WithQuerySelectColumns(selectColumns),
+		option.WithQueryScanOrder(table.KeepOrder),
 	)
 	if err != nil {
 		return nil, err

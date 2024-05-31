@@ -128,8 +128,8 @@ func DropTable(tableName string) {
 	}
 }
 
-func DeleteTable(tableName string) {
-	_, err := GlobalDB.Exec(fmt.Sprintf("delete from %s;", tableName))
+func TruncateTable(tableName string) {
+	_, err := GlobalDB.Exec(fmt.Sprintf("truncate table %s;", tableName))
 	if err != nil {
 		panic(err.Error())
 	}

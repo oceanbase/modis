@@ -328,7 +328,8 @@ func (s *Storage) IncrBy(ctx context.Context, db int64, key []byte, value []byte
 
 	// Convert result(string type) to int
 	resByte := res.Value(valueColumnName).([]byte)
-	num, err := strconv.ParseInt(string(resByte), 10, 64)
+	resByte = SimplifyNumber(resByte)
+	num, err := strconv.ParseInt(util.BytesToString(resByte), 10, 64)
 	if err != nil {
 		return -1, err
 	}
@@ -360,7 +361,9 @@ func (s *Storage) IncrByFloat(ctx context.Context, db int64, key []byte, value [
 	}
 
 	// Convert result(string type) to int
-	f64, err := strconv.ParseFloat(util.BytesToString(res.Value(valueColumnName).([]byte)), 64)
+	resByte := res.Value(valueColumnName).([]byte)
+	resByte = SimplifyNumber(resByte)
+	f64, err := strconv.ParseFloat(util.BytesToString(resByte), 64)
 	if err != nil {
 		return -1, err
 	}

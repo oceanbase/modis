@@ -75,7 +75,15 @@ func SRandMember(ctx *CmdContext) error {
 	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	} else if len(ctx.Args) == 1 {
+		// return bulk string
+		if len(members) == 0 {
+			ctx.OutContent = resp.EncNullBulkString()
+		} else {
+			ctx.OutContent = resp.EncBulkString(util.BytesToString(members[0]))
+		}
 	} else {
+		// return array
 		ctx.OutContent = resp.EncArray(members)
 	}
 	return nil
@@ -127,7 +135,15 @@ func SPop(ctx *CmdContext) error {
 	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	} else if len(ctx.Args) == 1 {
+		// return bulk string
+		if len(members) == 0 {
+			ctx.OutContent = resp.EncNullBulkString()
+		} else {
+			ctx.OutContent = resp.EncBulkString(util.BytesToString(members[0]))
+		}
 	} else {
+		// return array
 		ctx.OutContent = resp.EncArray(members)
 	}
 	return nil

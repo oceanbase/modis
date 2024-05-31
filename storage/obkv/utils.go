@@ -97,3 +97,16 @@ func (s *Storage) ObServerCmd(ctx context.Context, tableName string, rowKey []*t
 	}
 	return encodedRes, nil
 }
+
+// SimplifyNumber simplify 1.000000000 to 1
+// do not use to simplify 1000 -> 1
+func SimplifyNumber(num []byte) []byte {
+	truncIdx := len(num) - 1
+	for ; truncIdx >= 0 && num[truncIdx] == '0'; truncIdx-- {
+		// do nothing
+	}
+	if truncIdx >= 0 && num[truncIdx] == '.' {
+		truncIdx--
+	}
+	return num[:truncIdx+1]
+}

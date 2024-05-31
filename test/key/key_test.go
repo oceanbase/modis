@@ -44,12 +44,6 @@ const (
 	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, expire_ts timestamp(6) default null, primary key(db, rkey, `index`)) partition by key(db, rkey) partitions 3;"
 )
 
-func deleteTable() {
-	test.DeleteTable(testModisStringTableName)
-	test.DeleteTable(testModisHashTableName)
-	test.DeleteTable(testModisSetTableName)
-}
-
 func TestKey_Del(t *testing.T) {
 	key := "Key"
 	value := "Value"
