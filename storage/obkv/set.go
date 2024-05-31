@@ -200,6 +200,7 @@ func (s *Storage) SMembers(ctx context.Context, db int64, key []byte) ([][]byte,
 		tableName,
 		keyRanges,
 		option.WithQuerySelectColumns(selectColumns),
+		option.WithQueryScanOrder(table.KeepOrder),
 	)
 	if err != nil {
 		return nil, err
