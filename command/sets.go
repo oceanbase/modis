@@ -29,23 +29,6 @@ const (
 	setTableName = "modis_set_table"
 )
 
-// SAdd adds the specified members to the set stored at key
-func SAdd(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	members := make([][]byte, len(ctx.Args[1:]))
-	for i, member := range ctx.Args[1:] {
-		members[i] = member
-	}
-
-	addNum, err := ctx.CodecCtx.DB.Storage.SAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, members)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(addNum)
-	}
-	return nil
-}
-
 // SMembers returns all the members of the set value stored at key
 func SMembers(ctx *CmdContext) error {
 	key := ctx.Args[0]
@@ -180,181 +163,16 @@ func SMove(ctx *CmdContext) error {
 	return nil
 }
 
-// SUnion returns the members of the set resulting from the union of all the given sets.
-func SUnion(ctx *CmdContext) error {
-	var allMembers [][][]byte
-	for i := 0; i < len(ctx.Args); i++ {
-		key := ctx.Args[i]
-		members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		allMembers = append(allMembers, members)
-	}
-	ctx.OutContent = resp.EncArray(getUnion(allMembers...))
-
-	return nil
-}
-
-// SUnionStore stores the members of the set resulting from the union of all the given sets.
-func SUnionStore(ctx *CmdContext) error {
-	dstKey := ctx.Args[0]
-
-	// 1. Get members and do diff
-	var allMembers [][][]byte
-	for i := 1; i < len(ctx.Args); i++ {
-		key := ctx.Args[i]
-		members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		allMembers = append(allMembers, members)
-	}
-
-	unionMembers := getUnion(allMembers...)
-	if len(unionMembers) == 0 {
-		ctx.OutContent = resp.EncInteger(int64(0))
-		return nil
-	}
-
-	// 2. Store dstKey unionMembers
-	_, err := ctx.CodecCtx.DB.Storage.SAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, dstKey, unionMembers)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(len(unionMembers)))
-	}
-
-	return nil
-}
-
-// SInter returns the members of the set resulting from the intersection of all the given sets.
-func SInter(ctx *CmdContext) error {
-	var allMembers [][][]byte
-	for i := 0; i < len(ctx.Args); i++ {
-		key := ctx.Args[i]
-		members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		allMembers = append(allMembers, members)
-	}
-	ctx.OutContent = resp.EncArray(getIntersection(allMembers...))
-
-	return nil
-}
-
-// SInterStore stores the members of the set resulting from the intersection of all the given sets.
-func SInterStore(ctx *CmdContext) error {
-	dstKey := ctx.Args[0]
-
-	// 1. Get members and do diff
-	var allMembers [][][]byte
-	for i := 1; i < len(ctx.Args); i++ {
-		key := ctx.Args[i]
-		members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		allMembers = append(allMembers, members)
-	}
-
-	interMembers := getIntersection(allMembers...)
-	if len(interMembers) == 0 {
-		ctx.OutContent = resp.EncInteger(int64(0))
-		return nil
-	}
-
-	// 2. Store dstKey interMembers
-	_, err := ctx.CodecCtx.DB.Storage.SAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, dstKey, interMembers)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(len(interMembers)))
-	}
-
-	return nil
-}
-
-// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
-func SDiff(ctx *CmdContext) error {
-	// 1. Get first key members
-	firstKey := ctx.Args[0]
-	members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, firstKey)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-		return nil
-	}
-
-	// 2. Get other key members and cale exclusive members
-	for i := 1; i < len(ctx.Args); i++ {
-		key := ctx.Args[i]
-		tmpMembers, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		members = getExclusiveElements(members, tmpMembers)
-	}
-
-	// 3. Return result
-	ctx.OutContent = resp.EncArray(members)
-	return nil
-}
-
-// SDiff returns the members of the set resulting from the difference between the first set and all the successive sets.
-func SDiffServer(ctx *CmdContext) error {
-	firstKey := ctx.Args[0]
+func SetCmdWithKey(ctx *CmdContext) error {
+	key := ctx.Args[0]
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, firstKey),
+		table.NewColumn(keyColumnName, key),
 	}
 	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, setTableName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
-	return nil
-}
-
-// SDiffStore stores the difference set between the given sets in the specified set.
-func SDiffStore(ctx *CmdContext) error {
-	dstKey := ctx.Args[0]
-	keys := ctx.Args[1:]
-
-	// 1. Get members and do diff
-	var allMembers [][][]byte
-	for _, key := range keys {
-		members, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-		if err != nil {
-			ctx.OutContent = resp.EncError("ERR " + err.Error())
-			return nil
-		}
-
-		allMembers = append(allMembers, members)
-	}
-	diffMembers := getDifference(allMembers...)
-	if len(diffMembers) == 0 {
-		ctx.OutContent = resp.EncInteger(int64(0))
-		return nil
-	}
-
-	// 2. Store dstKey diffMembers
-	_, err := ctx.CodecCtx.DB.Storage.SAdd(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, dstKey, diffMembers)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(len(diffMembers)))
-	}
-
 	return nil
 }

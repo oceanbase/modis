@@ -42,43 +42,6 @@ const (
 	memberColumnName = "member"
 )
 
-// SAdd add member to set
-func (s *Storage) SAdd(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error) {
-	tableName := setTableName
-
-	// Create batch executor
-	batchExecutor := s.cli.NewBatchExecutor(tableName)
-
-	// Add operations
-	for _, member := range members {
-		// Set rowKey columns
-		rowKey := []*table.Column{
-			table.NewColumn(dbColumnName, db),
-			table.NewColumn(keyColumnName, key),
-			table.NewColumn(memberColumnName, member),
-		}
-
-		// Set normal columns
-		mutates := []*table.Column{
-			table.NewColumn(expireColumnName, nil),
-		}
-
-		err := batchExecutor.AddInsertOrUpdateOp(rowKey, mutates)
-		if err != nil {
-			return -1, err
-		}
-	}
-
-	// Execute
-	res, err := batchExecutor.Execute(ctx)
-	if err != nil {
-		return -1, err
-	}
-
-	// todo: 返回写入的数量
-	return int64(res.Size()), nil
-}
-
 // SCard get the size of the key
 func (s *Storage) SCard(ctx context.Context, db int64, key []byte) (int64, error) {
 	tableName := setTableName
@@ -258,7 +221,7 @@ func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, m
 	}
 
 	// Execute insert
-	_, err = s.cli.Insert(ctx, tableName, dstRowKey, mutates)
+	_, err = s.cli.InsertOrUpdate(ctx, tableName, dstRowKey, mutates)
 	if err != nil {
 		return 0, err
 	}

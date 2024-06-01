@@ -91,19 +91,19 @@ func init() {
 		"hmset":        {Cmd: HashCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 
 		// sets
-		"sadd":        {Cmd: SAdd, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sadd":        {Cmd: SetCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"smembers":    {Cmd: SMembers, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"srandmember": {Cmd: SRandMember, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"scard":       {Cmd: SCard, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"sismember":   {Cmd: SIsmember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"spop":        {Cmd: SPop, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"srem":        {Cmd: SRem, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sunion":      {Cmd: SUnion, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sunionstore": {Cmd: SUnionStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sinter":      {Cmd: SInter, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sinterstore": {Cmd: SInterStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sdiff":       {Cmd: SDiffServer, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"sdiffstore":  {Cmd: SDiffStore, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sunion":      {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sunionstore": {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sinter":      {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sinterstore": {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sdiff":       {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"sdiffstore":  {Cmd: SetCmdWithKey, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"smove":       {Cmd: SMove, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 
 		// zsets

@@ -63,7 +63,6 @@ type Storage interface {
 	HIncrByFloat(ctx context.Context, db int64, key []byte, field []byte, value []byte) (float64, error)
 
 	// set commands
-	SAdd(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
 	SCard(ctx context.Context, db int64, key []byte) (int64, error)
 	SIsmember(ctx context.Context, db int64, key []byte, member []byte) (int, error)
 	SMembers(ctx context.Context, db int64, key []byte) ([][]byte, error)
