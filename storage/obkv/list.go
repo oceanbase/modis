@@ -66,7 +66,7 @@ func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int6
 func (s *Storage) deleteList(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var delete_key_count int64 = 0
 	plainArray := make([][]byte, 2)
-	plainArray[0] = []byte("ledl")
+	plainArray[0] = []byte("ldel")
 
 	for i := 0; i < len(keys); i++ {
 		plainArray[1] = keys[i]

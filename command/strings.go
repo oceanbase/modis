@@ -20,9 +20,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/oceanbase/obkv-table-client-go/table"
 	"github.com/oceanbase/obkv-table-client-go/util"
 
 	"github.com/oceanbase/modis/protocol/resp"
+)
+
+const (
+	stringTableName = "modis_string_table"
 )
 
 // Get the value of key
@@ -112,21 +117,6 @@ func Append(ctx *CmdContext) error {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
 		ctx.OutContent = resp.EncInteger(int64(length))
-	}
-	return nil
-}
-
-// GetSet sets the string value of a key and return its old value
-func GetSet(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	value := ctx.Args[1]
-	val, err := ctx.CodecCtx.DB.Storage.GetSet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else if val == nil {
-		ctx.OutContent = resp.EncNullBulkString()
-	} else {
-		ctx.OutContent = resp.EncBulkString(util.BytesToString(val))
 	}
 	return nil
 }
@@ -275,30 +265,6 @@ func DecrBy(ctx *CmdContext) error {
 	return nil
 }
 
-// SetBit sets or clears the bit at offset in the string value stored at key.
-func SetBit(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	offset, err := strconv.Atoi(util.BytesToString(ctx.Args[1]))
-	if err != nil || offset < 0 {
-		ctx.OutContent = resp.ResponseBitOffsetErr
-		return nil
-	}
-
-	on, err := strconv.Atoi(util.BytesToString(ctx.Args[2]))
-	if err != nil || (on & ^1) != 0 {
-		ctx.OutContent = resp.ResponseBitIntegerErr
-		return nil
-	}
-
-	res, err := ctx.CodecCtx.DB.Storage.SetBit(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, offset, on)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(res))
-	}
-	return nil
-}
-
 // GetBit gets the bit at offset in the string value stored at key.
 func GetBit(ctx *CmdContext) error {
 	key := ctx.Args[0]
@@ -425,6 +391,20 @@ func GetRange(ctx *CmdContext) error {
 	} else {
 		sub := getRange(val, start, end)
 		ctx.OutContent = resp.EncBulkString(util.BytesToString(sub))
+	}
+	return nil
+}
+
+func StringCmdWithKey(ctx *CmdContext) error {
+	key := ctx.Args[0]
+	var err error
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, key),
+	}
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, stringTableName, rowKey, ctx.PlainReq)
+	if err != nil {
+		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
 	return nil
 }

@@ -46,9 +46,7 @@ type Storage interface {
 	Append(ctx context.Context, db int64, key []byte, value []byte) (int, error)
 	IncrBy(ctx context.Context, db int64, key []byte, value []byte) (int64, error)
 	IncrByFloat(ctx context.Context, db int64, key []byte, value []byte) (float64, error)
-	SetBit(ctx context.Context, db int64, key []byte, offset int, value int) (int, error)
 	GetBit(ctx context.Context, db int64, key []byte, offset int) (byte, error)
-	GetSet(ctx context.Context, db int64, key []byte, value []byte) ([]byte, error)
 
 	// hash commands
 	HSetNx(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int, error)

@@ -27,27 +27,6 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
-func setBit(bytes []byte, n int, value byte) (byte, error) {
-	if value != 0 && value != 1 {
-		return 0, errors.New("value must be 0 or 1")
-	}
-
-	byteIndex := n / 8 // 计算字节索引
-	bitIndex := n % 8  // 计算位索引
-
-	oldBitValue := (bytes[byteIndex] >> uint(7-bitIndex)) & 1
-	//根据value的值进行判断和设置
-	if oldBitValue == value {
-		// do nothing
-	} else if value == 1 {
-		bytes[byteIndex] = bytes[byteIndex] | (1 << uint8(7-bitIndex)) // 设置第n位为1
-	} else {
-		bytes[byteIndex] = bytes[byteIndex] &^ (1 << uint8(7-bitIndex)) // 设置第n位为0
-	}
-
-	return oldBitValue, nil
-}
-
 func getBit(bytes []byte, offset int) (byte, error) {
 	byteIndex := offset / 8
 	bitIndex := offset % 8
@@ -96,17 +75,4 @@ func (s *Storage) ObServerCmd(ctx context.Context, tableName string, rowKey []*t
 		return "", err
 	}
 	return encodedRes, nil
-}
-
-// SimplifyNumber simplify 1.000000000 to 1
-// do not use to simplify 1000 -> 1
-func SimplifyNumber(num []byte) []byte {
-	truncIdx := len(num) - 1
-	for ; truncIdx >= 0 && num[truncIdx] == '0'; truncIdx-- {
-		// do nothing
-	}
-	if truncIdx >= 0 && num[truncIdx] == '.' {
-		truncIdx--
-	}
-	return num[:truncIdx+1]
 }

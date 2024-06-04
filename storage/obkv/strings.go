@@ -68,44 +68,6 @@ func (s *Storage) Get(ctx context.Context, db int64, key []byte) ([]byte, error)
 	}
 }
 
-// GetSet replace old value with new value, and return old value. If key not exist, set new value and return nil.
-// Note that we do not guarantee the atomicity of queries and overwrites.
-func (s *Storage) GetSet(ctx context.Context, db int64, key []byte, value []byte) ([]byte, error) {
-	tableName := stringTableName
-
-	// Check whether the key exists firstly
-	rowKey := []*table.Column{
-		table.NewColumn(dbColumnName, db),
-		table.NewColumn(keyColumnName, key),
-	}
-	mutates := []*table.Column{
-		table.NewColumn(valueColumnName, value),
-	}
-
-	selectColumns := []string{valueColumnName}
-	res, err := s.cli.Get(ctx, tableName, rowKey, selectColumns)
-	if err != nil {
-		return nil, err
-	}
-
-	// Not exist, set new value and return nil
-	notExists := res.IsEmptySet()
-	if notExists {
-		_, err = s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
-		if err != nil {
-			return nil, err
-		}
-		return nil, nil
-	}
-
-	// Exist, do replace and return old value
-	_, err = s.cli.Replace(ctx, tableName, rowKey, mutates)
-	if err != nil {
-		return nil, err
-	}
-	return res.Value(valueColumnName).([]byte), nil
-}
-
 // MGet obtain key-value pairs in batches. If keys do not exist, null is returned.
 func (s *Storage) MGet(ctx context.Context, db int64, keys [][]byte) ([][]byte, error) {
 	tableName := stringTableName
@@ -328,7 +290,6 @@ func (s *Storage) IncrBy(ctx context.Context, db int64, key []byte, value []byte
 
 	// Convert result(string type) to int
 	resByte := res.Value(valueColumnName).([]byte)
-	resByte = SimplifyNumber(resByte)
 	num, err := strconv.ParseInt(util.BytesToString(resByte), 10, 64)
 	if err != nil {
 		return -1, err
@@ -362,55 +323,12 @@ func (s *Storage) IncrByFloat(ctx context.Context, db int64, key []byte, value [
 
 	// Convert result(string type) to int
 	resByte := res.Value(valueColumnName).([]byte)
-	resByte = SimplifyNumber(resByte)
 	f64, err := strconv.ParseFloat(util.BytesToString(resByte), 64)
 	if err != nil {
 		return -1, err
 	}
 
 	return f64, nil
-}
-
-// SetBit set the bit value of the specified offset position in the value of the specified key.
-func (s *Storage) SetBit(ctx context.Context, db int64, key []byte, offset int, value int) (int, error) {
-	tableName := stringTableName
-
-	// Set rowKey columns
-	rowKey := []*table.Column{
-		table.NewColumn(dbColumnName, db),
-		table.NewColumn(keyColumnName, key),
-	}
-
-	// Get value
-	selectColumns := []string{valueColumnName}
-	res, err := s.cli.Get(ctx, tableName, rowKey, selectColumns)
-	if err != nil {
-		return -1, err
-	}
-
-	// Select value
-	var bytes []byte
-	var oldBitVal byte
-	if res.Value(valueColumnName) != nil {
-		bytes = res.Value(valueColumnName).([]byte)
-	} else {
-		bytes = make([]byte, (offset/8 + 1))
-	}
-	oldBitVal, err = setBit(bytes, offset, byte(value))
-	if err != nil {
-		return -1, err
-	}
-
-	// Set value
-	mutates := []*table.Column{
-		table.NewColumn(valueColumnName, bytes),
-	}
-	_, err = s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
-	if err != nil {
-		return -1, err
-	}
-
-	return int(oldBitVal), nil
 }
 
 // GetBit get the bit value of the specified offset position in the value of the specified key.
