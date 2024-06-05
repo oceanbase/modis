@@ -70,6 +70,9 @@ func bitCount(bytes []byte, start, end int) (int, error) {
 }
 
 func getRange(bytes []byte, start, end int) []byte {
+	if start < 0 && end < 0 && start > end {
+		return nil
+	}
 	length := len(bytes)
 	if end < 0 {
 		end = length + end
@@ -77,14 +80,17 @@ func getRange(bytes []byte, start, end int) []byte {
 	if start < 0 {
 		start = length + start
 	}
-	if start > end || start > length || end < 0 {
-		return nil
-	}
-	if end > length {
-		end = length - 1
-	}
 	if start < 0 {
 		start = 0
+	}
+	if end < 0 {
+		end = 0
+	}
+	if end >= length {
+		end = length - 1
+	}
+	if start > end || length == 0 {
+		return nil
 	}
 	return bytes[start : end+1]
 }

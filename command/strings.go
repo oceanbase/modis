@@ -385,12 +385,15 @@ func GetRange(ctx *CmdContext) error {
 		ctx.OutContent = resp.ResponseIntegerErr
 		return nil
 	}
-
 	if val == nil {
 		ctx.OutContent = resp.EncBulkString("")
 	} else {
 		sub := getRange(val, start, end)
-		ctx.OutContent = resp.EncBulkString(util.BytesToString(sub))
+		if sub == nil {
+			ctx.OutContent = resp.EncBulkString("")
+		} else {
+			ctx.OutContent = resp.EncBulkString(util.BytesToString(sub))
+		}
 	}
 	return nil
 }

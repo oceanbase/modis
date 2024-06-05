@@ -18,7 +18,6 @@ package server
 
 import (
 	"bytes"
-	"io"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -51,6 +50,7 @@ func (rs *RedisCodec) GetCloseChan() *chan struct{} {
 
 // ReadRequest implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) ReadRequest(req *obkvrpc.Request) error {
+	req.ID = uuid.NewString()
 	args, err := rs.readCommand(&req.PlainReq)
 	if err != nil {
 		log.Warn("server", req.ID, "fail to read command", log.Errors(err))
@@ -61,7 +61,6 @@ func (rs *RedisCodec) ReadRequest(req *obkvrpc.Request) error {
 	if len(args) > 1 {
 		req.Args = args[1:]
 	}
-	req.ID = uuid.NewString()
 	return nil
 }
 
@@ -70,18 +69,12 @@ func (rs *RedisCodec) WriteResponse(resp *obkvrpc.Response) error {
 	conn := rs.CodecCtx.Conn
 	_, err := conn.Write(resp.RspContent)
 	if err != nil {
-		log.Warn("server", resp.ID, "fail to read command", log.Errors(err))
-		rs.CodecCtx.Conn.Close()
-		if err == io.EOF {
-			log.Info("server", resp.ID, "close connection", log.String("addr", conn.RemoteAddr().String()),
-				log.Int64("clientid", rs.CodecCtx.ID))
-		} else {
-			log.Error("server", resp.ID, "write net failed", log.String("addr", conn.RemoteAddr().String()),
-				log.Int64("clientid", rs.CodecCtx.ID),
-				log.String("namespace", rs.CodecCtx.DB.Namespace),
-				log.String("error", err.Error()))
-			return err
-		}
+		// rs.CodecCtx.Conn.Close()
+		log.Warn("server", resp.ID, "write net failed", log.String("addr", conn.RemoteAddr().String()),
+			log.Int64("clientid", rs.CodecCtx.ID),
+			log.String("namespace", rs.CodecCtx.DB.Namespace),
+			log.String("error", err.Error()))
+		return nil
 	}
 	rs.ServCtx.TotalWriteBytes.Inc(int64(len(resp.RspContent)))
 	return nil
