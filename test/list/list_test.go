@@ -18,8 +18,10 @@ package list
 
 import (
 	"context"
+	"github.com/go-redis/redis/v8"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/oceanbase/modis/test"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +29,7 @@ import (
 
 const (
 	testModisListTableName       = "modis_list_table"
-	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, expire_ts timestamp(6) default null, primary key(db, rkey, `index`)) partition by key(db, rkey) partitions 3;"
+	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, insert_ts timestamp(6) default null, primary key(db, rkey, `index`)) partition by key(db, rkey) partitions 3;"
 )
 
 func generateTestData(count int) []string {
@@ -83,11 +85,11 @@ func TestLPushX(t *testing.T) {
 	}
 
 	// fixme: should return *-1\r\n
-	// membersRedis, err := rCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// membersModis, err := mCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, membersRedis, membersModis)
+	membersRedis, err := rCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err := mCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, membersRedis, membersModis)
 
 	// key exist
 	val, err := rCli.LPush(context.TODO(), key, members[0], members[1]).Result()
@@ -103,9 +105,9 @@ func TestLPushX(t *testing.T) {
 		assert.Equal(t, val, val_m)
 	}
 
-	membersRedis, err := rCli.LRange(context.TODO(), key, 0, -1).Result()
+	membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
-	membersModis, err := mCli.LRange(context.TODO(), key, 0, -1).Result()
+	membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
 	assert.Equal(t, membersRedis, membersModis)
 }
@@ -155,11 +157,11 @@ func TestRPushX(t *testing.T) {
 	}
 
 	// fixme: should return *-1\r\n
-	// membersRedis, err := rCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// membersModis, err := mCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, membersRedis, membersModis)
+	membersRedis, err := rCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err := mCli.LRange(context.TODO(), keyNotExist, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, membersRedis, membersModis)
 
 	// key exist
 	val, err := rCli.RPush(context.TODO(), key, members[0], members[1]).Result()
@@ -175,9 +177,9 @@ func TestRPushX(t *testing.T) {
 		assert.Equal(t, val, val_m)
 	}
 
-	membersRedis, err := rCli.LRange(context.TODO(), key, 0, -1).Result()
+	membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
-	membersModis, err := mCli.LRange(context.TODO(), key, 0, -1).Result()
+	membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
 	assert.Equal(t, membersRedis, membersModis)
 }
@@ -267,11 +269,11 @@ func TestLIndex(t *testing.T) {
 	assert.Equal(t, val, val_m)
 
 	// fixme: should return $-1\r\n
-	// val, err = rCli.LIndex(context.TODO(), key, 18).Result()
-	// assert.Equal(t, redis.Nil, err)
-	// val_m, err = mCli.LIndex(context.TODO(), key, 18).Result()
-	// assert.Equal(t, redis.Nil, err)
-	// assert.Equal(t, val, val_m)
+	val, err = rCli.LIndex(context.TODO(), key, 18).Result()
+	assert.Equal(t, redis.Nil, err)
+	val_m, err = mCli.LIndex(context.TODO(), key, 18).Result()
+	assert.Equal(t, redis.Nil, err)
+	assert.Equal(t, val, val_m)
 }
 
 func TestLSet(t *testing.T) {
@@ -300,11 +302,11 @@ func TestLSet(t *testing.T) {
 	assert.Equal(t, val, val_m)
 
 	// fixme: should return "ERR index out of range"
-	// val, err = rCli.LSet(context.TODO(), key, 12, "setMember").Result()
-	// assert.Contains(t, err.Error(), "ERR index out of range")
-	// val_m, err_m := mCli.LSet(context.TODO(), key, 12, "setMember").Result()
-	// assert.Equal(t, err, err_m)
-	// assert.Equal(t, val, val_m)
+	val, err = rCli.LSet(context.TODO(), key, 12, "setMember").Result()
+	assert.Contains(t, err.Error(), "ERR index out of range")
+	val_m, err_m := mCli.LSet(context.TODO(), key, 12, "setMember").Result()
+	assert.Equal(t, err, err_m)
+	assert.Equal(t, val, val_m)
 
 	membersRedis, err := rCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
@@ -353,17 +355,17 @@ func TestLInsert(t *testing.T) {
 	}
 
 	// fixme: should return integer
-	// val, err := rCli.LInsert(context.TODO(), key, "Before", "b1", "b2").Result()
-	// assert.Equal(t, nil, err)
-	// val_m, err := mCli.LInsert(context.TODO(), key, "Before", "b1", "b2").Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, val, val_m)
+	val, err := rCli.LInsert(context.TODO(), key, "Before", "b1", "b2").Result()
+	assert.Equal(t, nil, err)
+	val_m, err := mCli.LInsert(context.TODO(), key, "Before", "b1", "b2").Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, val, val_m)
 
-	// val, err = rCli.LInsert(context.TODO(), key, "After", "a1", "a2").Result()
-	// assert.Equal(t, nil, err)
-	// val_m, err = mCli.LInsert(context.TODO(), key, "After", "a1", "a2").Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, val, val_m)
+	val, err = rCli.LInsert(context.TODO(), key, "After", "a1", "a2").Result()
+	assert.Equal(t, nil, err)
+	val_m, err = mCli.LInsert(context.TODO(), key, "After", "a1", "a2").Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, val, val_m)
 
 	membersRedis, err := rCli.LRange(context.TODO(), key, 0, -1).Result()
 	assert.Equal(t, nil, err)
@@ -418,30 +420,30 @@ func TestLRem(t *testing.T) {
 	assert.Equal(t, membersRedis, membersModis)
 
 	// fixme: should succ
-	// lremR, err = rCli.LRem(context.TODO(), key, 2, members[4]).Result()
-	// assert.Equal(t, nil, err)
-	// lremM, err = mCli.LRem(context.TODO(), key, 2, members[4]).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, lremR, lremM)
+	lremR, err = rCli.LRem(context.TODO(), key, 2, members[4]).Result()
+	assert.Equal(t, nil, err)
+	lremM, err = mCli.LRem(context.TODO(), key, 2, members[4]).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, lremR, lremM)
 
-	// membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, membersRedis, membersModis)
+	membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, membersRedis, membersModis)
 
-	// lremR, err = rCli.LRem(context.TODO(), key, -2, members[4]).Result()
-	// assert.Equal(t, nil, err)
-	// lremM, err = mCli.LRem(context.TODO(), key, -2, members[4]).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, lremR, lremM)
+	lremR, err = rCli.LRem(context.TODO(), key, -2, members[4]).Result()
+	assert.Equal(t, nil, err)
+	lremM, err = mCli.LRem(context.TODO(), key, -2, members[4]).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, lremR, lremM)
 
-	// time.Sleep(time.Second)
-	// membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
-	// assert.Equal(t, nil, err)
-	// assert.Equal(t, membersRedis, membersModis)
+	time.Sleep(time.Second)
+	membersRedis, err = rCli.LRange(context.TODO(), key, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	membersModis, err = mCli.LRange(context.TODO(), key, 0, -1).Result()
+	assert.Equal(t, nil, err)
+	assert.Equal(t, membersRedis, membersModis)
 }
 
 // Not supported currently
