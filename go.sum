@@ -57,8 +57,8 @@ github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h
 github.com/naoina/toml v0.1.1 h1:PT/lllxVVN0gzzSqSlHEmP8MJB4MY2U7STGxiouV4X8=
 github.com/naoina/toml v0.1.1/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
-github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240605123809-1feedba613bd h1:55grMC/vH4XvDeJt8BqdvpaR/M0c3oB6obsaVYGLWqI=
-github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240605123809-1feedba613bd/go.mod h1:8X07m4Lm76QlOfqsnUXqmQKi2/xfYpYg4Kv1kZi8e+w=
+github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240605135322-359a1a814d86 h1:wDZg0KLpJ+YEFjm5L8wn8LX1AEU9GcTBqbguhCMW7bg=
+github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240605135322-359a1a814d86/go.mod h1:8X07m4Lm76QlOfqsnUXqmQKi2/xfYpYg4Kv1kZi8e+w=
 github.com/onsi/ginkgo v1.16.5 h1:8xi0RTUf59SOSfEtZMvwTvXYMzG4gV23XVHOZiXNtnE=
 github.com/onsi/gomega v1.18.1 h1:M1GfJqGRrBrrGGsbxzV5dqM2U2ApXefZCQpkukxYRLE=
 github.com/orcaman/concurrent-map/v2 v2.0.1 h1:jOJ5Pg2w1oeB6PeDurIYf6k9PQ+aTITr/6lP/L/zp6c=

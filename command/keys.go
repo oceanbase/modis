@@ -181,8 +181,12 @@ func Type(ctx *CmdContext) error {
 	val, err := ctx.CodecCtx.DB.Storage.Type(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
+	} else if val == nil {
+		ctx.OutContent = resp.EncBulkString("none")
+	} else if len(val) == 1 {
+		ctx.OutContent = resp.EncBulkString(string(val[0]))
 	} else {
-		ctx.OutContent = resp.EncBulkString(val)
+		ctx.OutContent = resp.EncArray(val)
 	}
 	return nil
 }
