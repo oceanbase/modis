@@ -19,6 +19,7 @@ package conncontext
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -31,6 +32,7 @@ import (
 	"github.com/oceanbase/modis/metrics"
 	"github.com/oceanbase/modis/storage"
 	"github.com/oceanbase/modis/util"
+	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 const (
@@ -39,6 +41,11 @@ const (
 )
 
 type SupervisedMode int
+type ClientID int64
+
+func (id ClientID) String() string {
+	return fmt.Sprintf("%v", int(id))
+}
 
 const (
 	SupervisedNone    SupervisedMode = iota // 0
@@ -65,9 +72,9 @@ type ServerContext struct {
 	RejectClientNum int64
 	Backend         string
 	// [cliend id, CodecContext], record all clients
-	Clients map[int64]*CodecContext
+	Clients cmap.ConcurrentMap[ClientID, *CodecContext]
 	// [cliend id, CodecContext], record clients with monitor
-	Monitors map[int64]*CodecContext
+	Monitors cmap.ConcurrentMap[ClientID, *CodecContext]
 
 	// atomic, include all clients
 	TotalCmdNum     *metrics.Metrics
@@ -94,8 +101,8 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		TotalReadBytes:  metrics.NewMetrics(),
 		TotalWriteBytes: metrics.NewMetrics(),
 		Backend:         cfg.Storage.Backend,
-		Clients:         make(map[int64]*CodecContext),
-		Monitors:        make(map[int64]*CodecContext),
+		Clients:         cmap.NewStringer[ClientID, *CodecContext](),
+		Monitors:        cmap.NewStringer[ClientID, *CodecContext](),
 	}
 
 	// init modis path
@@ -224,12 +231,12 @@ func (sc *ServerContext) StartMetricsTicker() {
 			sc.TotalWriteBytes.Observe()
 
 			threshold := 10
-			if len(sc.Clients) > threshold {
-				threshold = len(sc.Clients) / threshold
+			if sc.Clients.Count() > threshold {
+				threshold = sc.Clients.Count() / threshold
 			}
 			var peekInput int64 = 0
-			for i, cliCtx := range sc.Clients {
-				if i >= int64(threshold) {
+			for i, cliCtx := range sc.Clients.Items() {
+				if int64(i) >= int64(threshold) {
 					break
 				}
 				input := int64(cliCtx.Reader.Size()) + cliCtx.TotalArgvLen

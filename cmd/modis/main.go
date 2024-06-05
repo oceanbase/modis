@@ -21,8 +21,8 @@ import (
 	"flag"
 	"fmt"
 
-	// "net/http"
-	// _ "net/http/pprof"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 
 	"github.com/oceanbase/modis/command"
@@ -39,9 +39,9 @@ var (
 )
 
 func main() {
-	// go func() {
-	// 	http.ListenAndServe(":6060", nil)
-	// }()
+	go func() {
+		http.ListenAndServe(":6060", nil)
+	}()
 	sv, configPath := readFlags()
 	if sv {
 		showVersion()

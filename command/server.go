@@ -300,7 +300,7 @@ func Info(ctx *CmdContext) error {
 }
 
 func Monitor(ctx *CmdContext) error {
-	ctx.ServCtx.Monitors[ctx.CodecCtx.ID] = ctx.CodecCtx
+	ctx.ServCtx.Monitors.Set(conncontext.ClientID(ctx.CodecCtx.ID), ctx.CodecCtx)
 	ctx.CodecCtx.Flag |= conncontext.ClientMonitor
 	ctx.OutContent = resp.ResponsesOk
 	return nil

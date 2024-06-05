@@ -138,7 +138,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		log.Debug("server", nil, "succ to accept a new connection",
 			log.String("addr", s.Listener.Addr().String()),
 			log.Int64("client id", cliID))
-		s.ServCtx.Clients[cliID] = cliCtx
+		s.ServCtx.Clients.Set(conncontext.ClientID(cliID), cliCtx)
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
 		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
 	}

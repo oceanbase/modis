@@ -21,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/modis/util"
@@ -35,7 +36,7 @@ func feedMonitors(ctx *CmdContext) {
 	var infoBuilder strings.Builder
 	var err error
 	tm := float64(time.Now().UnixMicro()) / 1000000
-	for id, cliCtx := range ctx.ServCtx.Monitors {
+	for id, cliCtx := range ctx.ServCtx.Monitors.Items() {
 		infoBuilder.Reset()
 		_, err = infoBuilder.WriteString(fmt.Sprintf(
 			"%.6f [%d %s] ",
@@ -45,20 +46,20 @@ func feedMonitors(ctx *CmdContext) {
 		))
 		if err != nil {
 			log.Warn("command", nil, "write string to builder failed, can not send monitor info",
-				log.Errors(err), log.Int64("client id", id))
+				log.Errors(err), log.Int64("client id", int64(id)))
 			continue
 		}
 		_, err = infoBuilder.WriteString("\"" + ctx.Name + "\"")
 		if err != nil {
 			log.Warn("command", nil, "write string to builder failed, can not send monitor info",
-				log.Errors(err), log.Int64("client id", id))
+				log.Errors(err), log.Int64("client id", int64(id)))
 			continue
 		}
 		for _, arg := range ctx.Args {
 			_, err = infoBuilder.WriteString(" \"" + util.BytesToString(arg) + "\"")
 			if err != nil {
 				log.Warn("command", nil, "write string to builder failed, can not send monitor info",
-					log.Errors(err), log.Int64("client id", id))
+					log.Errors(err), log.Int64("client id", int64(id)))
 				break
 			}
 		}
@@ -68,7 +69,7 @@ func feedMonitors(ctx *CmdContext) {
 		_, err := cliCtx.Conn.Write([]byte(resp.EncSimpleString(infoBuilder.String())))
 		if err != nil {
 			// send message failed, delete from map
-			delete(ctx.ServCtx.Monitors, id)
+			ctx.ServCtx.Monitors.Remove(conncontext.ClientID(id))
 		}
 	}
 }

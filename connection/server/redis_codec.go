@@ -110,7 +110,7 @@ func (rs *RedisCodec) Close() {
 			log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()))
 	}
 	rs.ServCtx.ClientNum--
-	delete(rs.ServCtx.Clients, rs.CodecCtx.ID)
+	rs.ServCtx.Clients.Remove(conncontext.ClientID(rs.CodecCtx.ID))
 }
 
 func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
