@@ -39,6 +39,7 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error
 	}
 	if num != 0 {
 		types = append(types, []byte("string")...)
+		is_first = false
 	}
 
 	num, err = s.hashExists(ctx, db, keys)
@@ -46,11 +47,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error
 		return nil, err
 	}
 	if num != 0 {
-		if is_first {
+		if !is_first {
 			types = append(types, []byte(", ")...)
-			is_first = false
 		}
 		types = append(types, []byte("hash")...)
+		is_first = false
 	}
 
 	num, err = s.listExists(ctx, db, keys)
@@ -58,11 +59,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error
 		return nil, err
 	}
 	if num != 0 {
-		if is_first {
+		if !is_first {
 			types = append(types, []byte(", ")...)
-			is_first = false
 		}
 		types = append(types, []byte("list")...)
+		is_first = false
 	}
 
 	num, err = s.zsetExists(ctx, db, keys)
@@ -70,11 +71,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error
 		return nil, err
 	}
 	if num != 0 {
-		if is_first {
+		if !is_first {
 			types = append(types, []byte(", ")...)
-			is_first = false
 		}
 		types = append(types, []byte("zset")...)
+		is_first = false
 	}
 
 	num, err = s.setExists(ctx, db, keys)
@@ -82,9 +83,8 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error
 		return nil, err
 	}
 	if num != 0 {
-		if is_first {
+		if !is_first {
 			types = append(types, []byte(", ")...)
-			is_first = false
 		}
 		types = append(types, []byte("set")...)
 	}

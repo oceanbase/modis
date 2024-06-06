@@ -47,7 +47,10 @@ func SRandMember(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	count := 1
 	var err error
-	if len(ctx.Args) == 2 {
+	if len(ctx.Args) > 2 {
+		ctx.OutContent = resp.ResponseSyntaxErr
+		return nil
+	} else if len(ctx.Args) == 2 {
 		count, err = strconv.Atoi(util.BytesToString(ctx.Args[1]))
 		if err != nil {
 			ctx.OutContent = resp.ResponseIntegerErr
