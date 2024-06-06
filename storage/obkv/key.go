@@ -27,17 +27,18 @@ import (
 
 // Type get the type of the key
 // check order: string hash list zset set
-func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([][]byte, error) {
+func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([]byte, error) {
 	var keys [][]byte
-	var types [][]byte
+	var types []byte
 	keys = append(keys, key)
+	is_first := true
 
 	num, err := s.stringExists(ctx, db, keys)
 	if err != nil {
 		return nil, err
 	}
 	if num != 0 {
-		types = append(types, []byte("string"))
+		types = append(types, []byte("string")...)
 	}
 
 	num, err = s.hashExists(ctx, db, keys)
@@ -45,7 +46,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([][]byte, err
 		return nil, err
 	}
 	if num != 0 {
-		types = append(types, []byte("hash"))
+		if is_first {
+			types = append(types, []byte(", ")...)
+			is_first = false
+		}
+		types = append(types, []byte("hash")...)
 	}
 
 	num, err = s.listExists(ctx, db, keys)
@@ -53,7 +58,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([][]byte, err
 		return nil, err
 	}
 	if num != 0 {
-		types = append(types, []byte("list"))
+		if is_first {
+			types = append(types, []byte(", ")...)
+			is_first = false
+		}
+		types = append(types, []byte("list")...)
 	}
 
 	num, err = s.zsetExists(ctx, db, keys)
@@ -61,7 +70,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([][]byte, err
 		return nil, err
 	}
 	if num != 0 {
-		types = append(types, []byte("zset"))
+		if is_first {
+			types = append(types, []byte(", ")...)
+			is_first = false
+		}
+		types = append(types, []byte("zset")...)
 	}
 
 	num, err = s.setExists(ctx, db, keys)
@@ -69,7 +82,11 @@ func (s *Storage) Type(ctx context.Context, db int64, key []byte) ([][]byte, err
 		return nil, err
 	}
 	if num != 0 {
-		types = append(types, []byte("set"))
+		if is_first {
+			types = append(types, []byte(", ")...)
+			is_first = false
+		}
+		types = append(types, []byte("set")...)
 	}
 
 	return types, nil
@@ -159,7 +176,7 @@ func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time
 	val, err := s.Type(ctx, db, key)
 	if err != nil {
 		return 0, err
-	} else if val != nil && (len(val) > 1 || string(val[0]) != "string") {
+	} else if val != nil && (len(val) != 6 || string(val) != "string") {
 		return 0, errors.New("expire types other than string are not supported")
 	}
 
@@ -219,7 +236,7 @@ func (s *Storage) Persist(ctx context.Context, db int64, key []byte) (int, error
 	val, err := s.Type(ctx, db, key)
 	if err != nil {
 		return 0, err
-	} else if val != nil && (len(val) > 1 || string(val[0]) != "string") {
+	} else if val != nil && (len(val) != 6 || string(val) != "string") {
 		return 0, errors.New("expire types other than string are not supported")
 	}
 
@@ -275,7 +292,7 @@ func (s *Storage) TTL(ctx context.Context, db int64, key []byte) (time.Duration,
 	val, err := s.Type(ctx, db, key)
 	if err != nil {
 		return 0, err
-	} else if val != nil && (len(val) > 1 || string(val[0]) != "string") {
+	} else if val != nil && (len(val) != 6 || string(val) != "string") {
 		return 0, errors.New("expire types other than string are not supported")
 	}
 

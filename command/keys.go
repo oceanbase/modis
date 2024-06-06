@@ -183,10 +183,8 @@ func Type(ctx *CmdContext) error {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else if val == nil {
 		ctx.OutContent = resp.EncBulkString("none")
-	} else if len(val) == 1 {
-		ctx.OutContent = resp.EncBulkString(string(val[0]))
 	} else {
-		ctx.OutContent = resp.EncArray(val)
+		ctx.OutContent = resp.EncBulkString(string(val))
 	}
 	return nil
 }

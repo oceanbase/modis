@@ -115,6 +115,9 @@ func Call(ctx *CmdContext) {
 		log.Warn("command", ctx.TraceID, "fail to exec command", log.Errors(err))
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
+	if strings.Contains(ctx.OutContent, "errCode:-10515") {
+		ctx.OutContent = resp.ResponseSyntaxErr
+	}
 
 	// feed monitor
 	if (commands[ctx.FullName].Flag & (CmdSkipMonitor | CmdAdmin)) == 0 {

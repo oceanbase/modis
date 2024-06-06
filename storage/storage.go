@@ -29,7 +29,7 @@ type Storage interface {
 	Initialize() error
 	// key commands
 	Delete(ctx context.Context, db int64, keys [][]byte) (int64, error)
-	Type(ctx context.Context, db int64, key []byte) ([][]byte, error)
+	Type(ctx context.Context, db int64, key []byte) ([]byte, error)
 	Exists(ctx context.Context, db int64, keys [][]byte) (int64, error)
 	Expire(ctx context.Context, db int64, key []byte, t time.Time) (int, error)
 	Persist(ctx context.Context, db int64, key []byte) (int, error)
