@@ -36,13 +36,13 @@ const (
 	ResponsesPong           = "+PONG\r\n"
 
 	// Shared command error responses
-	ResponsesNoautherr      = "-NOAUTH Authentication required.\r\n"
-	ResponseIntegerErr      = "-ERR value is not an integer or out of range\r\n"
-	ResponseFloatErr        = "-ERR value is not a valid float\r\n"
-	ResponseBitIntegerErr   = "-ERR bit is not an integer or out of range\r\n"
-	ResponseBitOffsetErr    = "-ERR bit offset is not an integer or out of range\r\n"
-	ResponseSyntaxErr       = "-ERR syntax error\r\n"
-	ResponseMaximumErr      = "-ERR string exceeds maximum allowed size\r\n"
+	ResponsesNoautherr    = "-NOAUTH Authentication required.\r\n"
+	ResponseIntegerErr    = "-ERR value is not an integer or out of range\r\n"
+	ResponseFloatErr      = "-ERR value is not a valid float\r\n"
+	ResponseBitIntegerErr = "-ERR bit is not an integer or out of range\r\n"
+	ResponseBitOffsetErr  = "-ERR bit offset is not an integer or out of range\r\n"
+	ResponseSyntaxErr     = "-ERR syntax error\r\n"
+	ResponseMaximumErr    = "-ERR string exceeds maximum allowed size\r\n"
 )
 
 // ErrUnKnownCommand return RedisError of the cmd
@@ -68,5 +68,5 @@ func ErrRedisCodec() string {
 }
 
 func ErrInvalidExpire(funcName string) string {
-	return "-ERR invalid expire time in" + funcName + "\r\n"
+	return "-ERR invalid expire time in " + funcName + "\r\n"
 }
