@@ -176,6 +176,7 @@ func (s *Storage) Set(ctx context.Context, db int64, key []byte, value []byte) e
 	// Set other columns
 	mutates := []*table.Column{
 		table.NewColumn(valueColumnName, value),
+		table.NewColumn(expireColumnName, nil),
 	}
 
 	// Execute
