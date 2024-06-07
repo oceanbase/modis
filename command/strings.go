@@ -18,6 +18,7 @@ package command
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/oceanbase/obkv-table-client-go/table"
@@ -227,7 +228,11 @@ func IncrByFloat(ctx *CmdContext) error {
 
 	f64, err := ctx.CodecCtx.DB.Storage.IncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
+		if strings.Contains(err.Error(), "-5114") {
+			ctx.OutContent = resp.EncError("ERR value is not a valid float")
+		} else {
+			ctx.OutContent = resp.EncError("ERR " + err.Error())
+		}
 	} else {
 		ctx.OutContent = resp.EncBulkString(strconv.FormatFloat(f64, 'f', -1, 64))
 	}
