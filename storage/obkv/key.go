@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/oceanbase/obkv-table-client-go/table"
@@ -170,23 +171,27 @@ func (s *Storage) Delete(ctx context.Context, db int64, keys [][]byte) (int64, e
 
 // Expire sets a timeout on key
 func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time) (int, error) {
+	var expireNum int
+	var err_msg string
 	res := 0
 	var err error
 
 	val, err := s.Type(ctx, db, key)
 	if err != nil {
 		return 0, err
-	} else if val != nil && (len(val) != 6 || string(val) != "string") {
-		return 0, errors.New("expire types other than string are not supported")
-	}
-
-	// expire string
-	res, err = s.expireString(ctx, db, key, table.TimeStamp(at))
-	if err != nil {
-		return 0, err
-	}
-	if res != 0 {
-		return res, nil
+	} else if val != nil {
+		if strings.Contains(string(val), "string") {
+			// expire string
+			res, err = s.expireString(ctx, db, key, table.TimeStamp(at))
+			if err != nil {
+				return 0, err
+			}
+			expireNum += res
+			err_msg += "expire string success, "
+		}
+		if len(val) != 6 || string(val) != "string" {
+			return expireNum, errors.New(err_msg + "expire types other than string are not supported")
+		}
 	}
 
 	// // expire hash
