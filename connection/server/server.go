@@ -120,7 +120,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 			log.Error("server", nil, "fail to accept connection", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			return err
 		}
-		if s.ServCtx.ClientNum+1 > servCfg.MaxConnection {
+		if s.ServCtx.ClientNum.Load() + 1 > int64(servCfg.MaxConnection) {
 			log.Warn("server", nil, "exceed max connection num", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			conn.Close()
 			s.ServCtx.RejectClientNum++
@@ -131,7 +131,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 			log.Warn("server", nil, "fail to visit db", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			return err
 		}
-		s.ServCtx.ClientNum++
+		s.ServCtx.ClientNum.Add(1)
 		s.ServCtx.TotalClientNum++
 		cliID := s.IDGenerator()
 		cliCtx := conncontext.NewCodecCtx(conn, cliID, db, maxQueueCmd)

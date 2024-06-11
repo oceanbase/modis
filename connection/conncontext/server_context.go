@@ -24,6 +24,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -66,7 +67,7 @@ type ServerContext struct {
 	Port            int
 	ModisPath       string
 	ConfigPath      string
-	ClientNum       int
+	ClientNum       atomic.Int64
 	MaxClientNum    int
 	TotalClientNum  int64
 	RejectClientNum int64
@@ -93,7 +94,6 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		Password:        servCfg.Password,
 		DbNum:           servCfg.DBNum,
 		dbs:             make([]*storage.DB, 0, servCfg.DBNum),
-		ClientNum:       0,
 		MaxClientNum:    servCfg.MaxConnection,
 		TotalClientNum:  0,
 		RejectClientNum: 0,
@@ -104,6 +104,7 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		Clients:         cmap.NewStringer[ClientID, *CodecContext](),
 		Monitors:        cmap.NewStringer[ClientID, *CodecContext](),
 	}
+	sc.ClientNum.Store(0)
 
 	// init modis path
 	err := sc.initModisPath()
