@@ -7,7 +7,7 @@ require (
 	github.com/go-mysql-org/go-mysql v1.8.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240605135322-359a1a814d86
+	github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240612035853-6541a94b8b44
 	github.com/orcaman/concurrent-map/v2 v2.0.1
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
