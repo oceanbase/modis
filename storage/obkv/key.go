@@ -173,7 +173,6 @@ func (s *Storage) Delete(ctx context.Context, db int64, keys [][]byte) (int64, e
 func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time) (int, error) {
 	var expireNum int
 	var err_msg string
-	res := 0
 	var err error
 
 	val, err := s.Type(ctx, db, key)
@@ -182,11 +181,11 @@ func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time
 	} else if val != nil {
 		if strings.Contains(string(val), "string") {
 			// expire string
-			res, err = s.expireString(ctx, db, key, table.TimeStamp(at))
+			_, err = s.expireString(ctx, db, key, table.TimeStamp(at))
 			if err != nil {
 				return 0, err
 			}
-			expireNum += res
+			expireNum += 1
 			err_msg += "expire string success, "
 		}
 		if len(val) != 6 || string(val) != "string" {
@@ -230,7 +229,7 @@ func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time
 	// 	return res, nil
 	// }
 
-	return 0, nil
+	return expireNum, nil
 }
 
 // Persist removes the existing timeout on key, turning the key from volatile to persistent
