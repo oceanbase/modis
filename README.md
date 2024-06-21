@@ -72,19 +72,21 @@ create table modis_zset_table(
   "server": {
     "listen": ":8085",
     "max-connection": 1000, # limit 10000
-    "password": "", # used for authentication
+    "password": "",
+    "databases": 256, # databases idx range [0, databases)
+    "supervised": "no",
     "TLS": {
       "ssl-cert-file": "",
       "ssl-key-file": ""
     }
   },
   "log": {
-    "filepath": "./log", # filename is fixed as modis.log
+    "filepath": "./", # filename is fixed as modis.log
     "single-file-max-size": 256, # MB
     "max-backup-file-size": 10, # 0 is not delete
     "max-age-file-rem": 30, # 30 day
     "compress": false,
-    "level": "info"
+    "level": "info" # info/error/warn/debug
   },
   "storage": {
     "backend": "obkv",
