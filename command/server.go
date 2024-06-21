@@ -166,7 +166,7 @@ func Info(ctx *CmdContext) error {
 					"maxclients:%d\r\n"+
 					"client_recent_max_input_buffer:%d\r\n"+
 					"client_recent_max_output_buffer:%d\r\n",
-				ctx.ServCtx.ClientNum,
+				ctx.ServCtx.ClientNum.Load(),
 				ctx.ServCtx.MaxClientNum,
 				ctx.ServCtx.ClientsPeakMemInput,
 				ctx.ServCtx.ClientsPeakMemOutput,
@@ -299,7 +299,7 @@ func Info(ctx *CmdContext) error {
 }
 
 func Monitor(ctx *CmdContext) error {
-	ctx.ServCtx.Monitors.Set(conncontext.ClientID(ctx.CodecCtx.ID), ctx.CodecCtx)
+	ctx.ServCtx.Monitors.Set(ctx.CodecCtx.ID, ctx.CodecCtx)
 	ctx.CodecCtx.Flag |= conncontext.ClientMonitor
 	ctx.OutContent = resp.ResponsesOk
 	return nil

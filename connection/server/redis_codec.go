@@ -18,7 +18,6 @@ package server
 
 import (
 	"bytes"
-	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -95,7 +94,11 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 
 // Close implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) Close() {
-	log.Debug("server", nil, "close RPC Server", log.String("stack", string(debug.Stack())))
+	log.Debug("server", nil, "close RPC Server",
+		log.Int64("ID", rs.CodecCtx.ID),
+		log.Int64("ID", rs.CodecCtx.ID),
+		log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()),
+	)
 	err := rs.CodecCtx.Conn.Close()
 	if err != nil {
 		log.Warn("server", "", "fail to close client connection",
@@ -103,7 +106,7 @@ func (rs *RedisCodec) Close() {
 			log.String("addr", rs.CodecCtx.Conn.RemoteAddr().String()))
 	}
 	rs.ServCtx.ClientNum.Add(-1)
-	rs.ServCtx.Clients.Remove(conncontext.ClientID(rs.CodecCtx.ID))
+	rs.ServCtx.Clients.Del(rs.CodecCtx.ID)
 }
 
 func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {

@@ -53,6 +53,7 @@ type ObkvStorageConfig struct {
 type ServerConfig struct {
 	Listen        string `mapstructure:"listen" json:"listen" yaml:"listen"`
 	MaxConnection int    `mapstructure:"max-connection" json:"max-connection" yaml:"max-connection"`
+	ChannelSize   int    `mapstructure:"channel-size" json:"channel-size" yaml:"channel-size"`
 	Password      string `mapstructure:"password" json:"password" yaml:"password"`
 	DBNum         int64  `mapstructure:"databases" json:"databases" yaml:"databases"`
 	Supervised    string `mapstructure:"supervised" json:"supervised" yaml:"supervised"`

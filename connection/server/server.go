@@ -36,7 +36,7 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/obkvrpc"
 )
 
-const maxQueueCmd = 100
+const maxQueueCmd = 2
 
 // Server accept request from redis clients
 type Server struct {
@@ -120,7 +120,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 			log.Error("server", nil, "fail to accept connection", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			return err
 		}
-		if s.ServCtx.ClientNum.Load() + 1 > int64(servCfg.MaxConnection) {
+		if s.ServCtx.ClientNum.Load()+1 > int64(servCfg.MaxConnection) {
 			log.Warn("server", nil, "exceed max connection num", log.Errors(err), log.String("addr", s.Listener.Addr().String()))
 			conn.Close()
 			s.ServCtx.RejectClientNum++
@@ -134,13 +134,14 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		s.ServCtx.ClientNum.Add(1)
 		s.ServCtx.TotalClientNum++
 		cliID := s.IDGenerator()
+		s.ServCtx.LastCliID = cliID
 		cliCtx := conncontext.NewCodecCtx(conn, cliID, db, maxQueueCmd)
 		log.Debug("server", nil, "succ to accept a new connection",
 			log.String("addr", s.Listener.Addr().String()),
 			log.Int64("client id", cliID))
-		s.ServCtx.Clients.Set(conncontext.ClientID(cliID), cliCtx)
+		s.ServCtx.Clients.Set(cliID, cliCtx)
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)
-		go obkvServer.ServeCodec(redisSrv, maxQueueCmd)
+		go obkvServer.ServeCodec(redisSrv, servCfg.ChannelSize)
 	}
 }
 
