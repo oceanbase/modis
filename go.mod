@@ -8,7 +8,7 @@ require (
 	github.com/go-mysql-org/go-mysql v1.8.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
-	github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240614063134-ffccffea621c
+	github.com/oceanbase/obkv-table-client-go v0.1.8-0.20240624024456-683894216602
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.26.0
@@ -63,5 +63,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/oceanbase/obkv-table-client-go => /home/xiongliyao.xly/work/obkv-table-client-go-self

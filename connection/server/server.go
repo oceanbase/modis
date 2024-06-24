@@ -18,6 +18,7 @@ package server
 
 import (
 	"crypto/tls"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -114,6 +115,8 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 	}
 	defer obkvServer.Close()
 	s.ServCtx.StartMetricsTicker()
+	fmt.Println("succ to init modis, start to listen")
+	log.Info("Server", nil, "succ to init modis, start to listen")
 	for { // until Accept() return error
 		conn, err := s.Listener.Accept()
 		if err != nil {

@@ -102,6 +102,7 @@ func checkLoggerConfigValidity(cfg config.LogConfig) error {
 }
 
 func InitLoggerWithConfig(cfg config.LogConfig) error {
+	fmt.Println("start to init logger with config...")
 	err := checkLoggerConfigValidity(cfg)
 	if err != nil {
 		fmt.Println("fail to check logger config validity, ", err)
@@ -122,6 +123,8 @@ func InitLoggerWithConfig(cfg config.LogConfig) error {
 	globalMutex.Lock()
 	defaultGlobalLogger = kvlog.NewLogger(logWriter, kvlog.MatchStr2LogLevel(cfg.Level), kvlog.AddCaller())
 	globalMutex.Unlock()
+	Info("Logger", nil, "init logger with config finished", String("file path", logFilePath))
+	fmt.Println("init logger with config finished")
 	return nil
 }
 

@@ -19,6 +19,7 @@ package conncontext
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -83,6 +84,8 @@ type ServerContext struct {
 
 // NewServerContext creates a new client context
 func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*ServerContext, error) {
+	fmt.Println("start to init server...")
+	log.Info("Server", nil, "start to init server...")
 	servCfg := &cfg.Server
 	sc := &ServerContext{
 		Storage:         s,
@@ -141,6 +144,8 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("init server ended")
+	log.Info("Server", nil, "init server ended")
 	return sc, nil
 }
 

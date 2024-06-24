@@ -105,6 +105,7 @@ func printConfig() error {
 }
 
 func LoadConfig(path ...string) (*viper.Viper, error) {
+	fmt.Println("start to load config...")
 	var config string
 	// Command line > Environment variable > Default values
 	if len(path) == 0 {
@@ -134,17 +135,17 @@ func LoadConfig(path ...string) (*viper.Viper, error) {
 			fmt.Println(err)
 			return
 		}
-		printConfig()
+		// printConfig()
 	})
 	if err := v.Unmarshal(&DefaultGlobalConfig); err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 
-	fmt.Println("init config finished")
-	err = printConfig()
-	if err != nil {
-		return nil, err
-	}
+	fmt.Println("load config finished")
+	// err = printConfig()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return v, nil
 }
