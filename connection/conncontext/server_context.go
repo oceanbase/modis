@@ -28,12 +28,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alphadose/haxmap"
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/metrics"
 	"github.com/oceanbase/modis/storage"
 	"github.com/oceanbase/modis/util"
-	cmap "github.com/orcaman/concurrent-map/v2"
 )
 
 const (
@@ -42,11 +42,6 @@ const (
 )
 
 type SupervisedMode int
-type ClientID int64
-
-func (id ClientID) String() string {
-	return fmt.Sprintf("%v", int(id))
-}
 
 const (
 	SupervisedNone    SupervisedMode = iota // 0
@@ -73,9 +68,10 @@ type ServerContext struct {
 	RejectClientNum int64
 	Backend         string
 	// [cliend id, CodecContext], record all clients
-	Clients cmap.ConcurrentMap[ClientID, *CodecContext]
+	Clients *haxmap.Map[int64, *CodecContext]
 	// [cliend id, CodecContext], record clients with monitor
-	Monitors cmap.ConcurrentMap[ClientID, *CodecContext]
+	Monitors  *haxmap.Map[int64, *CodecContext]
+	LastCliID int64
 
 	// atomic, include all clients
 	TotalCmdNum     *metrics.Metrics
@@ -88,6 +84,8 @@ type ServerContext struct {
 
 // NewServerContext creates a new client context
 func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*ServerContext, error) {
+	fmt.Println("start to init server...")
+	log.Info("Server", nil, "start to init server...")
 	servCfg := &cfg.Server
 	sc := &ServerContext{
 		Storage:         s,
@@ -101,8 +99,8 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 		TotalReadBytes:  metrics.NewMetrics(),
 		TotalWriteBytes: metrics.NewMetrics(),
 		Backend:         cfg.Storage.Backend,
-		Clients:         cmap.NewStringer[ClientID, *CodecContext](),
-		Monitors:        cmap.NewStringer[ClientID, *CodecContext](),
+		Clients:         haxmap.New[int64, *CodecContext](),
+		Monitors:        haxmap.New[int64, *CodecContext](),
 	}
 	sc.ClientNum.Store(0)
 
@@ -146,6 +144,8 @@ func NewServerContext(s storage.Storage, cfg *config.Config, cfgPath string) (*S
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("init server ended")
+	log.Info("Server", nil, "init server ended")
 	return sc, nil
 }
 
@@ -231,20 +231,24 @@ func (sc *ServerContext) StartMetricsTicker() {
 			sc.TotalReadBytes.Observe()
 			sc.TotalWriteBytes.Observe()
 
-			threshold := 10
-			if sc.Clients.Count() > threshold {
-				threshold = sc.Clients.Count() / threshold
+			var threshold uint64 = 10
+			clientLen := uint64(sc.Clients.Len())
+			if clientLen > threshold {
+				threshold = clientLen / threshold
 			}
 			var peekInput int64 = 0
-			for i, cliCtx := range sc.Clients.Items() {
-				if int64(i) >= int64(threshold) {
-					break
+			var i int64 = 0
+			sc.Clients.ForEach(func(id int64, cliCtx *CodecContext) bool {
+				if uint64(i) >= threshold {
+					return false
 				}
 				input := int64(cliCtx.Reader.Size()) + cliCtx.TotalArgvLen
 				if input > peekInput {
 					peekInput = input
 				}
-			}
+				i++
+				return true // return `true` to continue iteration and `false` to break iteration
+			})
 			if peekInput > sc.ClientsPeakMemInput {
 				sc.ClientsPeakMemInput = peekInput
 			}

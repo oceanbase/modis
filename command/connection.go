@@ -225,7 +225,7 @@ func ClientList(ctx *CmdContext) error {
 				ctx.OutContent = resp.EncError("Invalid client id: " + util.BytesToString(arg))
 				return nil
 			}
-			if cliCtx, ok := ctx.ServCtx.Clients.Get(conncontext.ClientID(id)); ok {
+			if cliCtx, ok := ctx.ServCtx.Clients.Get(int64(id)); ok {
 				err = getClientInfo(&infoBuilder, cliCtx)
 				if err != nil {
 					log.Warn("command", ctx.TraceID, "fail to get client info", log.Errors(err))
@@ -244,13 +244,15 @@ func ClientList(ctx *CmdContext) error {
 	} else {
 		var infoBuilder strings.Builder
 		var err error
-		for _, cliCtx := range ctx.ServCtx.Clients.Items() {
+		ctx.ServCtx.Clients.ForEach(func(id int64, cliCtx *conncontext.CodecContext) bool {
+			// return `true` to continue iteration and `false` to break iteration
 			err = getClientInfo(&infoBuilder, cliCtx)
 			if err != nil {
 				log.Warn("command", ctx.TraceID, "fail to get client info", log.Errors(err))
-				break
+				return false
 			}
-		}
+			return true
+		})
 
 		if err != nil {
 			ctx.OutContent = resp.EncError("ERR " + err.Error())

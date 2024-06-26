@@ -24,6 +24,7 @@ go build -ldflags  \
 -X 'github.com/oceanbase/modis/command.BuildID=$BUILD_ID'\
 -X 'github.com/oceanbase/modis/command.ModisVer=0.1.0'\
 "
+# \ -gcflags "all=-N -l" # for debug
 
 # Check whether the build was successful
 if [ $? -eq 0 ]; then

@@ -18,9 +18,11 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/oceanbase/modis/config"
+	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/storage/obkv"
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
@@ -84,11 +86,14 @@ func NewStorage(cfg Config) Storage {
 
 // Open a storage instance
 func Open(config *config.ObkvStorageConfig) (Storage, error) {
+	fmt.Println("start to connect to database...")
+	log.Info("Storage", nil, "start to connect to database...")
 	cfg := NewConfig(config)
 	storage := NewStorage(cfg)
 	if err := storage.Initialize(); err != nil {
 		return nil, err
 	}
-
+	log.Info("Storage", nil, "connect to database ended")
+	fmt.Println("connect to database ended")
 	return storage, nil
 }

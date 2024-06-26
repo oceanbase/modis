@@ -74,6 +74,7 @@ create table modis_zset_table(
     "max-connection": 1000, # limit 10000
     "password": "",
     "databases": 256, # databases idx range [0, databases)
+    "channel-size": 10,
     "supervised": "no",
     "TLS": {
       "ssl-cert-file": "",

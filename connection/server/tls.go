@@ -19,6 +19,7 @@ package server
 import (
 	"crypto/rand"
 	"crypto/tls"
+	"fmt"
 
 	"github.com/oceanbase/modis/log"
 )
@@ -26,6 +27,8 @@ import (
 // TLSConfig loads the TLS certificate and key files, returning a
 // tls.Config.
 func TLSConfig(certFile, keyFile string) (*tls.Config, error) {
+	fmt.Println("start to load TLS config...")
+	log.Info("Server", nil, "start to load TLS config...")
 	if certFile == "" || keyFile == "" {
 		log.Warn("server", "", "cert file or key file is empty",
 			log.String("cert file", certFile), log.String("key file", keyFile))
@@ -37,6 +40,8 @@ func TLSConfig(certFile, keyFile string) (*tls.Config, error) {
 			log.Errors(err), log.String("cert file", certFile), log.String("key file", keyFile))
 		return nil, err
 	}
+	fmt.Println("load TLS config ended")
+	log.Info("Server", nil, "load TLS config ended")
 	return &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		Rand:         rand.Reader,
