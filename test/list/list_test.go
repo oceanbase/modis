@@ -28,6 +28,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+<<<<<<< HEAD
+=======
+const (
+	testModisListTableName       = "modis_list_table"
+	testModisListCreateStatement = " CREATE TABLE modis_list_table(   db BIGINT NOT NULL,   rkey VARBINARY(1024) NOT NULL,   `index` BIGINT NOT NULL,                value VARBINARY(1024) DEFAULT NULL,   expire_ts TIMESTAMP(6) DEFAULT NULL,    PRIMARY KEY(db, rkey, `index`)        )  PARTITION BY KEY(db, rkey)             PARTITIONS 3;"
+)
+
+>>>>>>> add redis entity_type
 func generateTestData(count int) []string {
 	users := make([]string, count)
 
