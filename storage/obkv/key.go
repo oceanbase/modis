@@ -19,7 +19,6 @@ package obkv
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -101,21 +100,18 @@ func (s *Storage) Exists(ctx context.Context, db int64, keys [][]byte) (int64, e
 		return 0, err
 	}
 	existsNum += num
-	fmt.Println(num)
 
 	num, err = s.hashExists(ctx, db, keys)
 	if err != nil {
 		return 0, err
 	}
 	existsNum += num
-	fmt.Println(num)
 
 	num, err = s.listExists(ctx, db, keys)
 	if err != nil {
 		return 0, err
 	}
 	existsNum += num
-	fmt.Println(num)
 
 	num, err = s.zsetExists(ctx, db, keys)
 	if err != nil {
@@ -128,7 +124,6 @@ func (s *Storage) Exists(ctx context.Context, db int64, keys [][]byte) (int64, e
 		return 0, err
 	}
 	existsNum += num
-	fmt.Println(num)
 
 	return existsNum, nil
 }

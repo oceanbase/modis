@@ -34,18 +34,23 @@ func setup() {
 
 	test.CreateDB()
 
-	test.CreateTable(testModisStringCreateStatement)
-	test.CreateTable(testModisHashCreateStatement)
-	test.CreateTable(testModisSetCreateStatement)
-	test.CreateTable(testModisZSetCreateStatement)
-	test.CreateTable(testModisListCreateStatement)
-	test.ClearDb(0, rCli, testModisSetTableName, testModisStringTableName, testModisHashTableName, testModisZSetTableName, testModisListTableName)
+	test.CreateTable(test.TestModisStringCreateStatement)
+	test.CreateTable(test.TestModisHashCreateStatement)
+	test.CreateTable(test.TestModisSetCreateStatement)
+	test.CreateTable(test.TestModisZSetCreateStatement)
+	test.CreateTable(test.TestModisListCreateStatement)
+	test.ClearDb(0, rCli, test.TestModisSetTableName, test.TestModisStringTableName, test.TestModisHashTableName, test.TestModisZSetTableName, test.TestModisListTableName)
 }
 
 func teardown() {
 	rCli.Close()
 	mCli.Close()
 
+	test.DropTable(test.TestModisStringTableName)
+	test.DropTable(test.TestModisSetTableName)
+	test.DropTable(test.TestModisHashTableName)
+	test.DropTable(test.TestModisZSetTableName)
+	test.DropTable(test.TestModisListTableName)
 	test.CloseDB()
 }
 
