@@ -27,11 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testModisZSetTableName       = "modis_zset_table"
-	testModisZSetCreateStatement = "create table if not exists modis_zset_table(db bigint not null, rkey varbinary(1024) not null, member varbinary(1024) not null, score double not null, expire_ts timestamp(6) default null, index index_score(score) local, primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND) partition by key(db, rkey) partitions 3;"
-)
-
 func generateTestData(count int) ([]string, []float64) {
 	members := make([]string, count)
 	scores := make([]float64, count)
@@ -72,7 +67,7 @@ func do_zadd(t *testing.T, key string, members []string, scores []float64) error
 
 func TestZRange(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -124,7 +119,7 @@ func TestZRange(t *testing.T) {
 
 func TestZRevRange(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -176,7 +171,7 @@ func TestZRevRange(t *testing.T) {
 
 func TestZRem(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -207,7 +202,7 @@ func TestZRem(t *testing.T) {
 
 func TestZCard(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -223,7 +218,7 @@ func TestZCard(t *testing.T) {
 
 func TestZIncrBy(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -257,7 +252,7 @@ func TestZIncrBy(t *testing.T) {
 
 func TestZScore(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -273,7 +268,7 @@ func TestZScore(t *testing.T) {
 
 func TestZRank(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -289,7 +284,7 @@ func TestZRank(t *testing.T) {
 
 func TestZRevRank(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -304,7 +299,7 @@ func TestZRevRank(t *testing.T) {
 
 func TestZRemRangeByRank(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -331,7 +326,7 @@ func TestZRemRangeByRank(t *testing.T) {
 
 func TestZCount(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -356,7 +351,7 @@ func TestZCount(t *testing.T) {
 
 func TestZRangeByScore(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -423,7 +418,7 @@ func TestZRangeByScore(t *testing.T) {
 
 func TestZRevRangeByScore(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -490,7 +485,7 @@ func TestZRevRangeByScore(t *testing.T) {
 
 func TestZRemRangeByScore(t *testing.T) {
 	key := "zsetkey"
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	members, scores := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key, members, scores))
 
@@ -519,7 +514,7 @@ func TestZRemRangeByScore(t *testing.T) {
 }
 
 func TestZUnionStore(t *testing.T) {
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	key1 := "zsetkey1"
 	members1, scores1 := generateTestData(3)
 	assert.Equal(t, nil, do_zadd(t, key1, members1, scores1))
@@ -562,7 +557,7 @@ func TestZUnionStore(t *testing.T) {
 }
 
 func TestZInterStore(t *testing.T) {
-	defer test.ClearDb(0, rCli, testModisZSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisZSetTableName)
 	key1 := "zsetkey1"
 	members1, scores1 := generateTestData(2)
 	assert.Equal(t, nil, do_zadd(t, key1, members1, scores1))

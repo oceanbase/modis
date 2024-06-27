@@ -25,6 +25,23 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
+/*
+list model:
+CREATE TABLE modis_list_table(
+  db BIGINT NOT NULL,
+  rkey VARBINARY(1024) NOT NULL,
+  is_data tinyint(1) default 1,
+  insert_ts TIMESTAMP(6) DEFAULT NULL, 
+  expire_ts timestamp(6) default null,
+  value VARBINARY(1024) DEFAULT NULL,
+  `index` BIGINT NOT NULL,             
+  PRIMARY KEY(db, rkey, is_data, `index`)
+)
+KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "list"}}'
+PARTITION BY KEY(db, rkey)            
+PARTITIONS 3;
+*/
+
 const (
 	listTableName = "modis_list_table"
 )

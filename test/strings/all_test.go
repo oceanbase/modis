@@ -50,13 +50,15 @@ func setup() {
 
 	// Connect
 	test.CreateDB()
-	test.CreateTable(createStringTable)
-	test.ClearDb(0, redisCli, stringTableName)
+	test.CreateTable(test.TestModisStringCreateStatement)
+	test.ClearDb(0, redisCli, test.TestModisStringTableName)
 }
 
 func teardown() {
 	redisCli.Close()
 	modisCli.Close()
+
+	test.DropTable(test.TestModisStringTableName)
 	test.CloseDB()
 }
 

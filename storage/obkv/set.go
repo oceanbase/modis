@@ -28,13 +28,16 @@ import (
 
 /*
 sets table model:
-	create table modis_set_table(
-	  db bigint not null,
-	  rkey varbinary(1024) not null,
-	  member varbinary(1024) not null,
-	  expire_ts timestamp(6) default null,
-	  primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND)
-	  partition by key(db, rkey) partitions 3;
+CREATE TABLE modis_set_table(
+  db bigint not null,
+  rkey varbinary(1024) not null,
+  is_data tinyint(1) default 1,
+  insert_ts timestamp(6) DEFAULT NULL,
+  expire_ts timestamp(6) default null,
+  member varbinary(1024) not null,
+  PRIMARY KEY(db, rkey, is_data, member))
+  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
+  PARTITION BY KEY(db, rkey) PARTITIONS 3;
 */
 
 const (
@@ -50,11 +53,13 @@ func (s *Storage) SCard(ctx context.Context, db int64, key []byte) (int64, error
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -88,6 +93,7 @@ func (s *Storage) SRem(ctx context.Context, db int64, key []byte, members [][]by
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(memberColumnName, member),
 		}
 
@@ -121,6 +127,7 @@ func (s *Storage) SIsmember(ctx context.Context, db int64, key []byte, member []
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, member),
 	}
 
@@ -147,11 +154,13 @@ func (s *Storage) SMembers(ctx context.Context, db int64, key []byte) ([][]byte,
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -193,6 +202,7 @@ func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, m
 	srcRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, src),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, member),
 	}
 
@@ -212,6 +222,7 @@ func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, m
 	dstRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, dst),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, member),
 	}
 
@@ -243,6 +254,7 @@ func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int) ([]
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(memberColumnName, members[i]),
 		}
 
@@ -267,11 +279,13 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(memberColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -377,6 +391,7 @@ func (s *Storage) expireSet(ctx context.Context, db int64, key []byte, expire_ts
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(memberColumnName, member),
 		}
 
@@ -415,6 +430,7 @@ func (s *Storage) persistSet(ctx context.Context, db int64, key []byte) (int, er
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(memberColumnName, member),
 		}
 
@@ -458,6 +474,7 @@ func (s *Storage) ttlSet(ctx context.Context, db int64, key []byte) (time.Durati
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(memberColumnName, member),
 		}
 

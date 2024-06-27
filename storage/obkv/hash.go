@@ -30,15 +30,17 @@ import (
 )
 
 /*
-hashes table model:
-	create table modis_hash_table(
-	  db bigint not null,
-	  rkey varbinary(1024) not null,
-	  field varbinary(1024) not null,
-	  value varbinary(1024) not null,
-	  expire_ts timestamp(6) default null,
-	  primary key(db, rkey, field)) TTL(expire_ts + INTERVAL 0 SECOND)
-      partition by key(db, rkey) partitions 3;
+CREATE TABLE modis_hash_table(
+  db bigint not null,
+  rkey varbinary(1024) not null,
+  is_data tinyint(1) default 1,
+  insert_ts timestamp(6) DEFAULT NULL,
+  expire_ts timestamp(6) default null,
+  field varbinary(1024) not null,
+  value varbinary(1024) default null,
+  PRIMARY KEY(db, rkey, is_data, field))
+  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "hash"}}'
+  PARTITION BY KEY(db, rkey) PARTITIONS 3;
 */
 
 const (
@@ -54,6 +56,7 @@ func (s *Storage) HGet(ctx context.Context, db int64, key []byte, field []byte) 
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, field),
 	}
 
@@ -89,6 +92,7 @@ func (s *Storage) HDel(ctx context.Context, db int64, key []byte, fields [][]byt
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(fieldColumnName, field),
 		}
 
@@ -122,11 +126,13 @@ func (s *Storage) HGetAll(ctx context.Context, db int64, key []byte) ([][]byte, 
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -167,11 +173,13 @@ func (s *Storage) HKeys(ctx context.Context, db int64, key []byte) ([][]byte, er
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -211,11 +219,13 @@ func (s *Storage) HVals(ctx context.Context, db int64, key []byte) ([][]byte, er
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -255,11 +265,13 @@ func (s *Storage) HLen(ctx context.Context, db int64, key []byte) (int64, error)
 	startRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Min),
 	}
 	endRowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, table.Max),
 	}
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
@@ -284,6 +296,7 @@ func (s *Storage) HSetNx(ctx context.Context, db int64, key []byte, field []byte
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, field),
 	}
 
@@ -320,6 +333,7 @@ func (s *Storage) HMGet(ctx context.Context, db int64, key []byte, fields [][]by
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(fieldColumnName, field),
 		}
 
@@ -360,6 +374,7 @@ func (s *Storage) HIncrBy(ctx context.Context, db int64, key []byte, field []byt
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, field),
 	}
 
@@ -393,6 +408,7 @@ func (s *Storage) HIncrByFloat(ctx context.Context, db int64, key []byte, field 
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
 		table.NewColumn(keyColumnName, key),
+		table.NewColumn(isDataColumnName, true),
 		table.NewColumn(fieldColumnName, field),
 	}
 
@@ -471,6 +487,7 @@ func (s *Storage) expireHash(ctx context.Context, db int64, key []byte, expire_t
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(fieldColumnName, field),
 		}
 
@@ -509,6 +526,7 @@ func (s *Storage) persistHash(ctx context.Context, db int64, key []byte) (int, e
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(fieldColumnName, field),
 		}
 
@@ -552,6 +570,7 @@ func (s *Storage) ttlHash(ctx context.Context, db int64, key []byte) (time.Durat
 		rowKey := []*table.Column{
 			table.NewColumn(dbColumnName, db),
 			table.NewColumn(keyColumnName, key),
+			table.NewColumn(isDataColumnName, true),
 			table.NewColumn(fieldColumnName, field),
 		}
 

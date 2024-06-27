@@ -34,13 +34,14 @@ func setup() {
 
 	test.CreateDB()
 
-	test.CreateTable(testModisHashCreateStatement)
-	test.ClearDb(0, rCli, testModisHashTableName)
+	test.CreateTable(test.TestModisHashCreateStatement)
+	test.ClearDb(0, rCli, test.TestModisHashTableName)
 }
 
 func teardown() {
 	rCli.Close()
 	mCli.Close()
+	test.DropTable(test.TestModisHashTableName)
 	test.CloseDB()
 }
 

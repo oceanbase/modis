@@ -33,15 +33,15 @@ func setup() {
 	mCli = test.CreateModisClient()
 
 	test.CreateDB()
-	test.CreateTable(testModisZSetCreateStatement)
-	test.ClearDb(0, rCli, testModisZSetTableName)
+	test.CreateTable(test.TestModisZSetCreateStatement)
+	test.ClearDb(0, rCli, test.TestModisZSetTableName)
 }
 
 func teardown() {
 	rCli.Close()
 	mCli.Close()
 
-	test.TruncateTable(testModisZSetTableName)
+	test.DropTable(test.TestModisZSetTableName)
 	test.CloseDB()
 }
 

@@ -28,11 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	testModisListTableName       = "modis_list_table"
-	testModisListCreateStatement = "create table if not exists modis_list_table(db bigint not null, rkey varbinary(1024) not null, `index` BIGINT NOT NULL, value VARBINARY(1024) DEFAULT NULL, insert_ts timestamp(6) default null, primary key(db, rkey, `index`)) partition by key(db, rkey) partitions 3;"
-)
-
 func generateTestData(count int) []string {
 	users := make([]string, count)
 
@@ -45,7 +40,7 @@ func generateTestData(count int) []string {
 
 func TestLPush(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -72,7 +67,7 @@ func TestLPush(t *testing.T) {
 
 func TestLPushX(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 	members := generateTestData(10)
 
 	// key not exist
@@ -115,7 +110,7 @@ func TestLPushX(t *testing.T) {
 
 func TestRPush(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -143,7 +138,7 @@ func TestRPush(t *testing.T) {
 
 func TestRPushX(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 	members := generateTestData(10)
 
 	// fixme: should return *-1\r\n
@@ -187,7 +182,7 @@ func TestRPushX(t *testing.T) {
 
 func TestLPop(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -214,7 +209,7 @@ func TestLPop(t *testing.T) {
 
 func TestRPop(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -240,7 +235,7 @@ func TestRPop(t *testing.T) {
 
 func TestLIndex(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -279,7 +274,7 @@ func TestLIndex(t *testing.T) {
 
 func TestLSet(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -318,7 +313,7 @@ func TestLSet(t *testing.T) {
 
 func TestLTrim(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -344,7 +339,7 @@ func TestLTrim(t *testing.T) {
 
 func TestLInsert(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -377,7 +372,7 @@ func TestLInsert(t *testing.T) {
 
 func TestLLen(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -397,7 +392,7 @@ func TestLLen(t *testing.T) {
 
 func TestLRem(t *testing.T) {
 	key := "listKey"
-	defer test.ClearDb(0, rCli, testModisListTableName)
+	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -451,7 +446,7 @@ func TestLRem(t *testing.T) {
 // func TestRPopLPush(t *testing.T) {
 // 	key1 := "listKey1"
 // 	key2 := "listKey2"
-// 	defer test.ClearDb(0, rCli, testModisListTableName)
+// 	defer test.ClearDb(0, rCli, test.TestModisListTableName)
 
 // 	members := generateTestData(10)
 // 	for _, member := range members {

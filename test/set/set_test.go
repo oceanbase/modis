@@ -26,11 +26,6 @@ import (
 	"github.com/oceanbase/modis/test"
 )
 
-const (
-	testModisSetTableName       = "modis_set_table"
-	testModisSetCreateStatement = "create table if not exists modis_set_table(db bigint not null,rkey varbinary(1024) not null,member varbinary(1024) not null,expire_ts timestamp(6) default null,primary key(db, rkey, member)) TTL(expire_ts + INTERVAL 0 SECOND)partition by key(db, rkey) partitions 3;"
-)
-
 func generateTestData(count int) []string {
 	users := make([]string, count)
 
@@ -60,7 +55,7 @@ func difference(slice1, slice2 []string) []string {
 
 func TestSet_SAdd(t *testing.T) {
 	key := "setKey"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	members := generateTestData(10)
 	for _, member := range members {
@@ -79,7 +74,7 @@ func TestSet_SAdd(t *testing.T) {
 
 func TestSet_SCard(t *testing.T) {
 	key := "setKey"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	countRedis, err := rCli.SCard(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
@@ -105,7 +100,7 @@ func TestSet_SDiff(t *testing.T) {
 	key1 := "set1"
 	key2 := "set2"
 	key3 := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	diffRedis, err := rCli.SDiff(context.TODO(), key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -140,7 +135,7 @@ func TestSet_SDiffStore(t *testing.T) {
 	key2 := "set2"
 	key3 := "set3"
 	dstKey := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	countRedis, err := rCli.SDiffStore(context.TODO(), dstKey, key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -173,7 +168,7 @@ func TestSet_SInter(t *testing.T) {
 	key1 := "set1"
 	key2 := "set2"
 	key3 := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	interRedis, err := rCli.SInter(context.TODO(), key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -207,7 +202,7 @@ func TestSet_SInterStore(t *testing.T) {
 	key2 := "set2"
 	key3 := "set3"
 	dstKey := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	countRedis, err := rCli.SInterStore(context.TODO(), dstKey, key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -240,7 +235,7 @@ func TestSet_SUnion(t *testing.T) {
 	key1 := "set1"
 	key2 := "set2"
 	key3 := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	unionRedis, err := rCli.SUnion(context.TODO(), key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -275,7 +270,7 @@ func TestSet_SUnionStore(t *testing.T) {
 	key2 := "set2"
 	key3 := "set3"
 	dstKey := "set3"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	countRedis, err := rCli.SUnionStore(context.TODO(), dstKey, key1, key2, key3).Result()
 	assert.Equal(t, nil, err)
@@ -306,7 +301,7 @@ func TestSet_SUnionStore(t *testing.T) {
 
 func TestSet_SMembers(t *testing.T) {
 	key := "setKey"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	membersRedis, err := rCli.SMembers(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
@@ -333,7 +328,7 @@ func TestSet_SIsmember(t *testing.T) {
 	key := "setKey"
 	member := "member"
 	memberNot := "memberNot"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	isMemberRedis, err := rCli.SIsMember(context.TODO(), key, member).Result()
 	assert.Equal(t, nil, err)
@@ -364,7 +359,7 @@ func TestSet_SMove(t *testing.T) {
 	key2 := "set2"
 	member := "member"
 	memberNot := "memberNot"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	moveRedis, err := rCli.SMove(context.TODO(), key1, key2, member).Result()
 	assert.Equal(t, nil, err)
@@ -394,7 +389,7 @@ func TestSet_SPop(t *testing.T) {
 	key := "set"
 	member := "member"
 	var count int64 = 10
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	spopRedis, errRedis := rCli.SPopN(context.TODO(), key, count).Result()
 	spopModis, errModis := mCli.SPopN(context.TODO(), key, count).Result()
@@ -417,7 +412,7 @@ func TestSet_SRandMember(t *testing.T) {
 	key := "setKey"
 	member := "member"
 	var count int64 = 1
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	memberRedis, err := rCli.SRandMemberN(context.TODO(), key, count).Result()
 	assert.Equal(t, nil, err)
@@ -441,7 +436,7 @@ func TestSet_SRem(t *testing.T) {
 	key := "setKey"
 	member := "member"
 	memberNot := "memberNot"
-	defer test.ClearDb(0, rCli, testModisSetTableName)
+	defer test.ClearDb(0, rCli, test.TestModisSetTableName)
 
 	sremRedis, err := rCli.SRem(context.TODO(), key, member, memberNot).Result()
 	assert.Equal(t, nil, err)
