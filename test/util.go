@@ -20,6 +20,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
+	"os"
 	"strconv"
 
 	"github.com/oceanbase/modis/config"
@@ -211,7 +213,14 @@ func InitLogger() {
 		Compress:          false,
 		Level:             "debug",
 	}
-	err := log.InitLoggerWithConfig(cfg)
+	log_watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		fmt.Println("fail to init watcher, ", err)
+		os.Exit(1)
+	}
+	defer log_watcher.Close()
+
+	err = log.InitLoggerWithConfig(cfg, log_watcher)
 	if err != nil {
 		panic(err.Error())
 	}
