@@ -18,6 +18,7 @@ package obkv
 
 import (
 	"github.com/oceanbase/obkv-table-client-go/client"
+	"github.com/oceanbase/obkv-table-client-go/protocol"
 )
 
 const (
@@ -52,6 +53,7 @@ func (s *Storage) Initialize() error {
 	if err != nil {
 		return err
 	}
+	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
 
 	s.cli = cli
 	return nil
