@@ -46,20 +46,20 @@ func feedMonitors(ctx *CmdContext) {
 			cliCtx.Conn.RemoteAddr(),
 		))
 		if err != nil {
-			log.Warn("command", nil, "write string to builder failed, can not send monitor info",
+			log.Warn("command", ctx.TraceID, "write string to builder failed, can not send monitor info",
 				log.Errors(err), log.Int64("client id", int64(id)))
 			return true
 		}
 		_, err = infoBuilder.WriteString("\"" + ctx.Name + "\"")
 		if err != nil {
-			log.Warn("command", nil, "write string to builder failed, can not send monitor info",
+			log.Warn("command", ctx.TraceID, "write string to builder failed, can not send monitor info",
 				log.Errors(err), log.Int64("client id", int64(id)))
 			return true
 		}
 		for _, arg := range ctx.Args {
 			_, err = infoBuilder.WriteString(" \"" + util.BytesToString(arg) + "\"")
 			if err != nil {
-				log.Warn("command", nil, "write string to builder failed, can not send monitor info",
+				log.Warn("command", ctx.TraceID, "write string to builder failed, can not send monitor info",
 					log.Errors(err), log.Int64("client id", int64(id)))
 				break
 			}

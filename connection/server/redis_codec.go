@@ -25,6 +25,7 @@ import (
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/protocol/resp"
+	respPak "github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/obkv-table-client-go/obkvrpc"
 	"github.com/oceanbase/obkv-table-client-go/util"
 
@@ -84,6 +85,22 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 	rs.CodecCtx.LastCmdTime = time.Now()
 	ctx := command.NewCmdContext(req.Method, req.Args, req.ID, req.PlainReq, rs.CodecCtx, rs.ServCtx)
 	command.Call(ctx)
+	outLen := len(ctx.OutContent)
+	if outLen < 3 ||
+		ctx.OutContent[outLen-1] != '\n' ||
+		ctx.OutContent[outLen-2] != '\r' {
+		// should end with \r\n, otherwise redis-cli may get stuck
+		ctx.OutContent = respPak.ResponseOutContentErr
+	}
+
+	if ctx.OutContent[0] == '-' {
+		// log error
+		log.Warn("Server", ctx.TraceID, "execute command failed",
+			log.String("err msg", ctx.OutContent),
+			log.String("command", req.Method),
+			log.String("modis ip", rs.CodecCtx.Conn.LocalAddr().String()),
+			log.String("client ip", rs.CodecCtx.Conn.RemoteAddr().String()))
+	}
 
 	resp.ID = ctx.TraceID
 	resp.RspContent = []byte(ctx.OutContent)
@@ -141,14 +158,12 @@ func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
 	rs.CodecCtx.LastArgvLen = 0
 	argv := make([][]byte, argc)
 	for i := 0; i < argc; i++ {
-		arg, err := resp.ReadBulkString(rs.CodecCtx.Reader, plainReq)
+		argv[i], err = resp.ReadBulkString(rs.CodecCtx.Reader, plainReq)
 		if err != nil {
 			log.Warn("server", nil, "fail to read bulk string", log.Errors(err))
 			return nil, err
 		}
-		argv[i] = arg
-		rs.CodecCtx.LastArgvLen += int64(len(arg))
-		log.Debug("server", nil, "read command", log.Int("arg idx", i), log.String("val", string(arg)))
+		rs.CodecCtx.LastArgvLen += int64(len(argv[i]))
 	}
 	rs.CodecCtx.TotalArgvLen += rs.CodecCtx.LastArgvLen
 	rs.ServCtx.TotalReadBytes.Inc((*rs.CodecCtx.TotalBytes) - lastReadBytes)
