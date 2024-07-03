@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 
 	// "net/http"
 	// _ "net/http/pprof"
@@ -53,13 +54,21 @@ func main() {
 		fmt.Println("fail to load config", err)
 		os.Exit(1)
 	}
+
+	log_watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		fmt.Println("fail to init watcher, ", err)
+		os.Exit(1)
+	}
+	defer log_watcher.Close()
 	cfg := config.DefaultGlobalConfig
 
-	err = log.InitLoggerWithConfig(cfg.Log)
+	err = log.InitLoggerWithConfig(cfg.Log, log_watcher)
 	if err != nil {
 		fmt.Println("fail to init logger", err)
 		os.Exit(1)
 	}
+	defer log.Sync()
 
 	s, err := storage.Open(&cfg.Storage.ObkvConfig)
 	if err != nil {

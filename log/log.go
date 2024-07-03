@@ -19,6 +19,8 @@ package log
 import (
 	"errors"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
+	"path/filepath"
 	"sync"
 
 	"github.com/oceanbase/modis/config"
@@ -101,7 +103,7 @@ func checkLoggerConfigValidity(cfg config.LogConfig) error {
 	return nil
 }
 
-func InitLoggerWithConfig(cfg config.LogConfig) error {
+func InitLoggerWithConfig(cfg config.LogConfig, watcher *fsnotify.Watcher) error {
 	fmt.Println("start to init logger with config...")
 	err := checkLoggerConfigValidity(cfg)
 	if err != nil {
@@ -109,20 +111,61 @@ func InitLoggerWithConfig(cfg config.LogConfig) error {
 		return err
 	}
 	logFilePath := cfg.FilePath + "/modis.log"
+	logName := filepath.Base(logFilePath)
+	lumberjackLogger := &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    cfg.SingleFileMaxSize,
+		MaxBackups: cfg.MaxBackupFileSize,
+		MaxAge:     cfg.MaxAgeFileRem,
+		Compress:   cfg.Compress,
+		LocalTime:  true,
+	}
 	logWriter := &zapcore.BufferedWriteSyncer{
-		WS: zapcore.AddSync(&lumberjack.Logger{
-			Filename:   logFilePath,
-			MaxSize:    cfg.SingleFileMaxSize,
-			MaxBackups: cfg.MaxBackupFileSize,
-			MaxAge:     cfg.MaxAgeFileRem,
-			Compress:   cfg.Compress,
-		}),
+		WS: zapcore.AddSync(lumberjackLogger),
 		//Size specifies the maximum amount of data the writer will buffered before flushing. Defaults to 256 kB if unspecified.
 		Size: kvlog.BufferSize, // async print buffer size
 	}
+
 	globalMutex.Lock()
 	defaultGlobalLogger = kvlog.NewLogger(logWriter, kvlog.MatchStr2LogLevel(cfg.Level), kvlog.AddCaller())
 	globalMutex.Unlock()
+
+	if err := watcher.Add(filepath.Dir(logFilePath)); err != nil {
+		Error("Logger", "", "fail to add watcher", Errors(err))
+		fmt.Println("fail to add watcher, ", err)
+		return err
+	}
+
+	go func(logger *kvlog.Logger, lumberjackLogger *lumberjack.Logger) {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					logger.Error("fsnotify watcher events channel closed")
+					return
+				}
+				if event.Op&fsnotify.Remove == fsnotify.Remove && filepath.Base(event.Name) == logName {
+					if err := lumberjackLogger.Rotate(); err != nil {
+						logger.Error("rotate log error", zap.Error(err))
+						continue
+					}
+					if err := logger.Sync(); err != nil {
+						logger.Error("log flush error", zap.Error(err))
+						continue
+					}
+					logger.Info("rotate log success", zap.String("event.Name", event.Name))
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					logger.Error("fsnotify watcher error channel closed")
+					return
+				}
+				logger.Error("fsnotify watcher error", zap.Error(err))
+			}
+
+		}
+	}(defaultGlobalLogger, lumberjackLogger)
+
 	Info("Logger", nil, "init logger with config finished", String("file path", logFilePath))
 	fmt.Println("init logger with config finished")
 	return nil
@@ -155,4 +198,8 @@ func Fatal(logType string, traceId any, msg string, fields ...kvlog.Field) {
 
 func Debug(logType string, traceId any, msg string, fields ...kvlog.Field) {
 	defaultGlobalLogger.Debug(kvlog.AddInfo(logType, traceId, msg), fields...)
+}
+
+func Sync() {
+	defaultGlobalLogger.Sync()
 }
