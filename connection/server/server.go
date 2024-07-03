@@ -140,7 +140,7 @@ func (s *Server) serve(servCfg *config.ServerConfig) (err error) {
 		s.ServCtx.LastCliID = cliID
 		cliCtx := conncontext.NewCodecCtx(conn, cliID, db, maxQueueCmd)
 		log.Debug("server", nil, "succ to accept a new connection",
-			log.String("addr", s.Listener.Addr().String()),
+			log.String("remote addr", conn.RemoteAddr().String()),
 			log.Int64("client id", cliID))
 		s.ServCtx.Clients.Set(cliID, cliCtx)
 		redisSrv := NewRedisCodec(cliCtx, s.ServCtx)

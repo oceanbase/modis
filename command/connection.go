@@ -79,7 +79,7 @@ func Select(ctx *CmdContext) error {
 	}
 	idx := int64(idxTmp)
 	if idx < 0 || idx >= ctx.ServCtx.DbNum {
-		ctx.OutContent = resp.EncError("ERR invalid DB index")
+		ctx.OutContent = resp.EncError("ERR DB index is out of range")
 		return nil
 	}
 

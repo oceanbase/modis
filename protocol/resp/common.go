@@ -43,6 +43,7 @@ const (
 	ResponseBitOffsetErr  = "-ERR bit offset is not an integer or out of range\r\n"
 	ResponseSyntaxErr     = "-ERR syntax error\r\n"
 	ResponseMaximumErr    = "-ERR string exceeds maximum allowed size\r\n"
+	ResponseOutContentErr = "-ERR response message with syntax error\r\n"
 )
 
 // ErrUnKnownCommand return RedisError of the cmd
@@ -56,15 +57,15 @@ func ErrWrongArgs(cmd string) string {
 }
 
 func ErrOutRange(min int64, max int64) string {
-	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", min, max)
+	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d\r\n", min, max)
 }
 
 func ErrOutRangeDefault() string {
-	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d", math.MaxInt, math.MinInt)
+	return fmt.Sprintf("-ERR value is out of range, value must between %d and %d\r\n", math.MaxInt, math.MinInt)
 }
 
 func ErrRedisCodec() string {
-	return "-ERR error occurred in obkv go client"
+	return "-ERR error occurred in obkv go client\r\n"
 }
 
 func ErrInvalidExpire(funcName string) string {
