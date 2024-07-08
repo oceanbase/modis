@@ -25,10 +25,6 @@ import (
 	"strings"
 )
 
-const (
-	zsetTableName = "modis_zset_table"
-)
-
 func ZSetCmdWithKey(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	var err error

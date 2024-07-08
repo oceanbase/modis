@@ -22,10 +22,6 @@ import (
 	"math"
 )
 
-const (
-	listTableName = "modis_list_table"
-)
-
 func ListCmd(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	var err error

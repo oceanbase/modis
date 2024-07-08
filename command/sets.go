@@ -25,10 +25,6 @@ import (
 	"github.com/oceanbase/modis/protocol/resp"
 )
 
-const (
-	setTableName = "modis_set_table"
-)
-
 // SMembers returns all the members of the set value stored at key
 func SMembers(ctx *CmdContext) error {
 	key := ctx.Args[0]
