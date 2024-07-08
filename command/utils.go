@@ -18,11 +18,15 @@ package command
 
 import (
 	"bytes"
+	"errors"
+	"strings"
 
 	"github.com/oceanbase/modis/connection/conncontext"
 	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/storage/obkv"
 )
+
+type void struct{}
 
 const (
 	dbColumnName     = "db"
@@ -31,6 +35,28 @@ const (
 	expireColumnName = "expire_ts"
 	memberColumnName = "member"
 	indexColumnName  = "index"
+	stringTableName  = "modis_string_table"
+	setTableName     = "modis_set_table"
+	listTableName    = "modis_list_table"
+	hashTableName    = "modis_hash_table"
+	zsetTableName    = "modis_zset_table"
+)
+
+var (
+	tbNames = []string{
+		stringTableName,
+		hashTableName,
+		setTableName,
+		zsetTableName,
+		listTableName,
+	}
+	models = []string{
+		"string",
+		"hash",
+		"set",
+		"zset",
+		"list",
+	}
 )
 
 func bitCount(bytes []byte, start, end int) (int, error) {
@@ -212,4 +238,20 @@ func replaceWithRedacted(arg []byte) {
 	if !bytes.Equal(arg, red) {
 		arg = red
 	}
+}
+
+func getTableNameByModel(model string) (string, error) {
+	switch strings.ToLower(model) {
+	case "hash":
+		return hashTableName, nil
+	case "list":
+		return listTableName, nil
+	case "set":
+		return setTableName, nil
+	case "zset":
+		return zsetTableName, nil
+	case "string":
+		return stringTableName, nil
+	}
+	return "", errors.New("invalid model name")
 }

@@ -17,11 +17,9 @@
 package command
 
 import (
-	"math"
 	"strconv"
-	"time"
 
-	"github.com/oceanbase/obkv-table-client-go/util"
+	"github.com/oceanbase/obkv-table-client-go/table"
 
 	"github.com/oceanbase/modis/protocol/resp"
 )
@@ -42,28 +40,21 @@ func Delete(ctx *CmdContext) error {
 
 // Exists returns if key exists
 func Exists(ctx *CmdContext) error {
-	keys := make([][]byte, len(ctx.Args))
-	copy(keys, ctx.Args)
-	val, err := ctx.CodecCtx.DB.Storage.Exists(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, keys)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(val)
+	var err error
+	var res int
+	for _, tbName := range tbNames {
+		var str string
+		str, err = GenericCmdWithKey(ctx, tbName)
+		if err != nil {
+			break
+		}
+		var retInt int
+		retInt, err = strconv.Atoi(str)
+		if err != nil {
+			break
+		}
+		res += retInt
 	}
-	return nil
-}
-
-// Expire sets a timeout on key
-func Expire(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	seconds, err := strconv.ParseInt(util.BytesToString(ctx.Args[1]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.ResponseIntegerErr
-		return nil
-	}
-
-	at := time.Now().Add(time.Second * time.Duration(seconds))
-	res, err := ctx.CodecCtx.DB.Storage.Expire(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, at)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -72,119 +63,92 @@ func Expire(ctx *CmdContext) error {
 	return nil
 }
 
-// ExpireAt sets an absolute timestamp to expire on key
-func ExpireAt(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	timestamp, err := strconv.ParseInt(util.BytesToString(ctx.Args[1]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.ResponseIntegerErr
-		return nil
+func ExpireCommon(ctx *CmdContext) error {
+	var err error
+	var isPersist int64 = 0
+	for _, tbName := range tbNames {
+		var str string
+		str, err = GenericCmdWithKey(ctx, tbName)
+		if err != nil {
+			break
+		}
+		if str == "1" {
+			isPersist = 1
+		}
 	}
-
-	at := time.Unix(timestamp, 0)
-	res, err := ctx.CodecCtx.DB.Storage.Expire(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, at)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
-		ctx.OutContent = resp.EncInteger(int64(res))
+		ctx.OutContent = resp.EncInteger(isPersist)
 	}
 	return nil
 }
 
-// Persist removes the existing timeout on key, turning the key from volatile to persistent
-func Persist(ctx *CmdContext) error {
-	key := ctx.Args[0]
-
-	res, err := ctx.CodecCtx.DB.Storage.Persist(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(res))
-	}
-	return nil
-}
-
-// PExpire works exactly like expire but the time to live of the key is specified in milliseconds instead of seconds
-func PExpire(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	ms, err := strconv.ParseInt(util.BytesToString(ctx.Args[1]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.ResponseIntegerErr
-		return nil
-	}
-
-	at := time.Now().Add(time.Millisecond * time.Duration(ms))
-	res, err := ctx.CodecCtx.DB.Storage.Expire(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, at)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(res))
-	}
-	return nil
-}
-
-// PExpireAt has the same effect and semantic as expireAt,
-// but the Unix time at which the key will expire is specified in milliseconds instead of seconds
-func PExpireAt(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	ms, err := strconv.ParseInt(util.BytesToString(ctx.Args[1]), 10, 64)
-	if err != nil {
-		ctx.OutContent = resp.ResponseIntegerErr
-		return nil
-	}
-
-	nanoseconds := ms * int64(time.Millisecond)
-	at := time.Unix(0, nanoseconds)
-	res, err := ctx.CodecCtx.DB.Storage.Expire(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, at)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(res))
-	}
-	return nil
-}
-
-// TTL returns the remaining time to live of a key that has a timeout
 func TTL(ctx *CmdContext) error {
-	key := ctx.Args[0]
-
-	res, err := ctx.CodecCtx.DB.Storage.TTL(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
-	if err != nil {
-		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else if res < 0 {
-		ctx.OutContent = resp.EncInteger(int64(res))
-	} else {
-		ctx.OutContent = resp.EncInteger(int64(math.Ceil(res.Seconds())))
+	var err error
+	var ttl int64 = -2
+	for _, tbName := range tbNames {
+		var str string
+		str, err = GenericCmdWithKey(ctx, tbName)
+		if err != nil {
+			break
+		}
+		if str == "-2" {
+			// do nothing
+		} else if str == "-1" {
+			ttl = -1
+		} else {
+			var ret_num int
+			ret_num, err = strconv.Atoi(str)
+			if err != nil {
+				break
+			}
+			ttl = int64(ret_num)
+			// all key ttl is same
+			break
+		}
 	}
-	return nil
-}
-
-// PTTL likes TTL this command returns the remaining time to live of a key that has an expire set,
-// with the sole difference that TTL returns the amount of remaining time in seconds while PTTL returns it in milliseconds
-func PTTL(ctx *CmdContext) error {
-	key := ctx.Args[0]
-
-	res, err := ctx.CodecCtx.DB.Storage.TTL(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else if res < 0 {
-		ctx.OutContent = resp.EncInteger(int64(res))
 	} else {
-		ctx.OutContent = resp.EncInteger(res.Milliseconds())
+		ctx.OutContent = resp.EncInteger(ttl)
 	}
 	return nil
 }
 
 // Type returns the string representation of the type of the value stored at key
 func Type(ctx *CmdContext) error {
-	key := ctx.Args[0]
-	val, err := ctx.CodecCtx.DB.Storage.Type(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	var err error
+	var res string
+	for i, tbName := range tbNames {
+		var str string
+		str, err = GenericCmdWithKey(ctx, tbName)
+		if err != nil {
+			break
+		}
+		if str == "1" {
+			if len(res) > 0 {
+				res += ", "
+			}
+			res += models[i]
+		}
+	}
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else if val == nil {
+	} else if len(res) == 0 {
 		ctx.OutContent = resp.EncBulkString("none")
 	} else {
-		ctx.OutContent = resp.EncBulkString(string(val))
+		ctx.OutContent = resp.EncBulkString(res)
 	}
-	return nil
+	return err
+}
+
+// compat server
+func GenericCmdWithKey(ctx *CmdContext, tableName string) (string, error) {
+	key := ctx.Args[0]
+	rowKey := []*table.Column{
+		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
+		table.NewColumn(keyColumnName, key),
+	}
+	return ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, tableName, rowKey, ctx.PlainReq)
 }

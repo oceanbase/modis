@@ -27,10 +27,6 @@ import (
 	"github.com/oceanbase/modis/protocol/resp"
 )
 
-const (
-	stringTableName = "modis_string_table"
-)
-
 // Get the value of key
 func Get(ctx *CmdContext) error {
 	key := ctx.Args[0]
