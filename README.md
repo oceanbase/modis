@@ -14,56 +14,66 @@ Create table in the OceanBase database:
 -- string
 create table modis_string_table(
   db bigint not null,
-  rkey varbinary(1024) not null,
-  value varbinary(10240) not null,
+  rkey varbinary(16384) not null, # 16K
+  value varbinary(1048576) not null, # 1M
   expire_ts timestamp(6) default null,
-  primary key(db, rkey))
-  TTL(expire_ts + INTERVAL 0 SECOND)
-	partition by key(db, rkey) partitions 389;
+  primary key(db, rkey)) 
+  TTL(expire_ts + INTERVAL 0 SECOND) 
+  partition by key(db, rkey) partitions 3;
 
 -- hash
-create table modis_hash_table(
+CREATE TABLE modis_hash_table(
   db bigint not null,
-  rkey varbinary(1024) not null,
-  field varbinary(10240) not null,
-  value varbinary(10240) not null,
+  rkey varbinary(8192) not null, # 8K
+  is_data tinyint(1) default 1,
+  insert_ts timestamp(6) DEFAULT NULL,
   expire_ts timestamp(6) default null,
-  primary key(db, rkey, field))
-  TTL(expire_ts + INTERVAL 0 SECOND)
-  partition by key(db, rkey) partitions 389;
+  field varbinary(8192) not null, # 8K
+  value varbinary(1048576) default null, # 1M
+  PRIMARY KEY(db, rkey, is_data, field))
+  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "hash"}}'
+  PARTITION BY KEY(db, rkey) PARTITIONS 3;
 
 -- set
-create table modis_set_table(
-	  db bigint not null,
-	  rkey varbinary(1024) not null,
-	  member varbinary(10240) not null,
-	  expire_ts timestamp(6) default null,
-	  primary key(db, rkey, member))
-    TTL(expire_ts + INTERVAL 0 SECOND)
-	  partition by key(db, rkey) partitions 389;
+CREATE TABLE modis_set_table(
+  db bigint not null,
+  rkey varbinary(1024) not null, # 1K
+  is_data tinyint(1) default 1,
+  insert_ts timestamp(6) DEFAULT NULL,
+  expire_ts timestamp(6) default null,
+  member varbinary(15360) not null, # 15K
+  PRIMARY KEY(db, rkey, is_data, member))
+  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
+  PARTITION BY KEY(db, rkey) PARTITIONS 3;
 
 -- list
-create table modis_list_table(
-    db bigint not null,
-    rkey varbinary(1024) not null,
-    idx bigint not null,
-    element varbinary(10240) not null,
-    expire_ts timestamp(6) default null,
-    primary key(db, rkey, idx))
-    TTL(expire_ts + INTERVAL 0 SECOND)
-    partition by key(db, rkey) partitions 389;
+CREATE TABLE modis_list_table(
+  db BIGINT NOT NULL,
+  rkey VARBINARY(16384) NOT NULL, # 16K
+  is_data tinyint(1) default 1,
+  insert_ts TIMESTAMP(6) DEFAULT NULL, 
+  expire_ts timestamp(6) default null,
+  value VARBINARY(1048576) DEFAULT NULL, # 1M
+  `index` BIGINT NOT NULL,             
+  PRIMARY KEY(db, rkey, is_data, `index`)
+)
+KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "list"}}'
+PARTITION BY KEY(db, rkey)            
+PARTITIONS 3;
 
 -- zset
-create table modis_zset_table(
+CREATE TABLE modis_zset_table(
   db bigint not null,
-  rkey varbinary(1024) not null,
-  member varbinary(10240) not null,
-  score bigint not null,
+  rkey varbinary(1024) not null, # 1K 
+  is_data tinyint(1) default 1,
+  insert_ts timestamp(6) DEFAULT NULL,
   expire_ts timestamp(6) default null,
-  index index_score(score) local,
-  primary key(db, rkey, member))
-  TTL(expire_ts + INTERVAL 0 SECOND)
-  partition by key(db, rkey) partitions 389;
+  member varbinary(15360) not null, # 15k
+  score double default null,
+  index index_score(db, rkey, score) local,
+  PRIMARY KEY(db, rkey, is_data, member))
+  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
+  PARTITION BY KEY(db, rkey) PARTITIONS 3;
 ```
 
 `config.yaml` file exmaple:
