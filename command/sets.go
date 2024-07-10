@@ -57,6 +57,11 @@ func SRandMember(ctx *CmdContext) error {
 			return nil
 		}
 	}
+	// note: count < 0 is not support in this ver
+	if count < 0 {
+		ctx.OutContent = resp.ResponseIntegerErr
+		return nil
+	}
 
 	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
