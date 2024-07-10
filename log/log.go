@@ -20,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
+	"os"
 	"path/filepath"
 	"sync"
 
@@ -129,6 +130,21 @@ func InitLoggerWithConfig(cfg config.LogConfig, watcher *fsnotify.Watcher) error
 	globalMutex.Lock()
 	defaultGlobalLogger = kvlog.NewLogger(logWriter, kvlog.MatchStr2LogLevel(cfg.Level), kvlog.AddCaller())
 	globalMutex.Unlock()
+
+	dir := filepath.Dir(logFilePath)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			Error("Logger", "", "fail to create directory", Errors(err))
+			fmt.Println("fail to create directory, ", err)
+			return err
+		}
+	}
+
+	if err := watcher.Add(dir); err != nil {
+		Error("Logger", "", "fail to add watcher", Errors(err))
+		fmt.Println("fail to add watcher, ", err)
+		return err
+	}
 
 	if err := watcher.Add(filepath.Dir(logFilePath)); err != nil {
 		Error("Logger", "", "fail to add watcher", Errors(err))
