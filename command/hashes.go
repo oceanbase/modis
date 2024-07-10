@@ -26,10 +26,6 @@ import (
 	"github.com/oceanbase/modis/protocol/resp"
 )
 
-const (
-	hashTableName = "modis_hash_table"
-)
-
 // HDel removes the specified fields from the hash stored at key
 func HDel(ctx *CmdContext) error {
 	key := ctx.Args[0]

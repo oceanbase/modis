@@ -35,7 +35,6 @@ type Storage interface {
 	Exists(ctx context.Context, db int64, keys [][]byte) (int64, error)
 	Expire(ctx context.Context, db int64, key []byte, t time.Time) (int, error)
 	Persist(ctx context.Context, db int64, key []byte) (int, error)
-	TTL(ctx context.Context, db int64, key []byte) (time.Duration, error)
 
 	// string commands
 	Get(ctx context.Context, db int64, key []byte) ([]byte, error)

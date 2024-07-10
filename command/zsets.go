@@ -21,10 +21,6 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
-const (
-	zsetTableName = "modis_zset_table"
-)
-
 func ZSetCmdWithKey(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	var err error
