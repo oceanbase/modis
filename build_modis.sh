@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Define variables to get the current Git commit hash, the branch name, the latest commit information, and the build timestamp
+VERSION=$(git describe --tags --abbrev=0)
 COMMIT_HASH=$(git rev-parse HEAD)
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 BUILD_TIME=$(date "+%Y-%m-%d %H:%M:%S")
@@ -22,7 +23,8 @@ go build -ldflags  \
 -X 'github.com/oceanbase/modis/command.GitSha1=$GIT_SHA1'\
 -X 'github.com/oceanbase/modis/command.GitDirty=$GIT_DIRTY'\
 -X 'github.com/oceanbase/modis/command.BuildID=$BUILD_ID'\
--X 'github.com/oceanbase/modis/command.ModisVer=0.1.0'\
+-X 'github.com/oceanbase/modis/command.ModisVer=$VERSION'\
+-X 'github.com/oceanbase/modis/command.CommitID=$COMMIT_HASH'\
 "
 # \ -gcflags "all=-N -l" # for debug
 
