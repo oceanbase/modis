@@ -108,6 +108,7 @@ func showVersion() {
 	bit := 32 << (^uint(0) >> 63)
 	fmt.Println("Welcome to modis.")
 	fmt.Println("Modis Version:", command.ModisVer)
+	fmt.Println("Commit ID:", command.CommitID)
 	fmt.Printf("SHA: %s:%s\n", command.GitSha1, command.GitDirty)
 	fmt.Println("Build ID:", command.BuildID)
 	fmt.Println("Bits:", bit)

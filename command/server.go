@@ -33,6 +33,8 @@ var (
 	GitSha1       string
 	GitDirty      string
 	BuildID       string
+	CommitID      string
+	ModisVer      string
 	supervisedMap = map[conncontext.SupervisedMode]string{
 		conncontext.SupervisedNone:    "none",
 		conncontext.SupervisedSystemd: "systemd",
@@ -42,7 +44,6 @@ var (
 )
 
 const (
-	ModisVer  = "0.1.0"
 	modisMode = "standalone"
 )
 
