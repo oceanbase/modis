@@ -105,11 +105,8 @@ func readFlags() (showVersion bool, config string) {
 
 // ShowVersion print version info about modis
 func showVersion() {
-	bit := 32 << (^uint(0) >> 63)
 	fmt.Println("Welcome to modis.")
 	fmt.Println("Modis Version:", command.ModisVer)
-	fmt.Printf("SHA: %s:%s\n", command.GitSha1, command.GitDirty)
-	fmt.Println("Build ID:", command.BuildID)
-	fmt.Println("Bits:", bit)
+	fmt.Println("Commit ID:", command.CommitID)
 	fmt.Println("Golang compiler Version:", GolangVersion)
 }
