@@ -1,18 +1,6 @@
 #!/bin/bash
 
-# Define variables to get the current Git commit hash, the branch name, the latest commit information, and the build timestamp
-VERSION=$(git describe --tags --abbrev=0)
-COMMIT_HASH=$(git rev-parse HEAD)
-BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-BUILD_TIME=$(date "+%Y-%m-%d %H:%M:%S")
-LAST_COMMIT_LOG=$(git log -1 --pretty=%B)
-GO_VERSION=$(go version | awk '{print $3}') # 例如 "go1.15.2"
-GIT_SHA1=`(git show-ref --head --hash=8 2> /dev/null || echo 00000000) | head -n1`
-GIT_DIRTY=`git diff --no-ext-diff 2> /dev/null | wc -l`
-BUILD_ID=`uname -n`"-"`date +%s`
-if [ -n "$SOURCE_DATE_EPOCH" ]; then
-  BUILD_ID=$(date -u -d "@$SOURCE_DATE_EPOCH" +%s 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" +%s 2>/dev/null || date -u +%s)
-fi
+source env.sh
 
 # Build the Go program, inject Git commit hash, branch name, build time, commit log, and Go version
 cd cmd/modis
