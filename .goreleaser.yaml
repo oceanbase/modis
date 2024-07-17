@@ -1,0 +1,31 @@
+
+builds:
+  - id: modis-linux
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/modis/main.go
+    ldflags:
+      -X 'main.GolangVersion={{ .Env.GO_VERSION }}' 
+      -X 'github.com/oceanbase/modis/command.GitSha1={{ .Env.GIT_SHA1 }}' 
+      -X 'github.com/oceanbase/modis/command.GitDirty={{ .Env.GIT_DIRTY }}' 
+      -X 'github.com/oceanbase/modis/command.BuildID={{ .Env.BUILD_ID }}' 
+      -X 'github.com/oceanbase/modis/command.ModisVer={{ .Env.VERSION }}' 
+      -X 'github.com/oceanbase/modis/command.CommitID={{ .Env.COMMIT_HASH }}'
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ title .Os }}_{{ .Arch }}
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^Merge"
