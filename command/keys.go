@@ -65,21 +65,9 @@ func Exists(ctx *CmdContext) error {
 
 func ExpireCommon(ctx *CmdContext) error {
 	var err error
-	var isPersist int64 = 0
-	for _, tbName := range tbNames {
-		var str string
-		str, err = GenericCmdWithKey(ctx, tbName)
-		if err != nil {
-			break
-		}
-		if str == "1" {
-			isPersist = 1
-		}
-	}
+	ctx.OutContent, err = GenericCmdWithKey(ctx, stringTableName)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
-	} else {
-		ctx.OutContent = resp.EncInteger(isPersist)
 	}
 	return nil
 }

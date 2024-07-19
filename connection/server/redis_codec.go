@@ -90,6 +90,7 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 		ctx.OutContent[outLen-1] != '\n' ||
 		ctx.OutContent[outLen-2] != '\r' {
 		// should end with \r\n, otherwise redis-cli may get stuck
+		log.Warn("Server", ctx.TraceID, "OutContent has syntax error", log.String("err msg", ctx.OutContent))
 		ctx.OutContent = respPak.ResponseOutContentErr
 	}
 
