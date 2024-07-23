@@ -64,16 +64,16 @@ func init() {
 		"getrange":    {Cmd: StringCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 
 		// keys
-		"type":      {Cmd: Type, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"exists":    {Cmd: Exists, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"del":       {Cmd: Delete, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"type":      {Cmd: ExpireCommon, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"exists":    {Cmd: ExpireCommon, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"del":       {Cmd: ExpireCommon, Arity: -2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"expire":    {Cmd: ExpireCommon, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"expireat":  {Cmd: ExpireCommon, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"pexpire":   {Cmd: ExpireCommon, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"pexpireat": {Cmd: ExpireCommon, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"persist":   {Cmd: ExpireCommon, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"ttl":       {Cmd: TTL, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"pttl":      {Cmd: TTL, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"ttl":       {Cmd: ExpireCommon, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"pttl":      {Cmd: ExpireCommon, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 
 		// hashes
 		"hdel":         {Cmd: HashCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
