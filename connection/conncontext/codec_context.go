@@ -105,14 +105,6 @@ func NewCodecCtx(conn net.Conn, id int64, db *storage.DB, queLimit int) *CodecCo
 	rc := &ReadCounter{reader: conn}
 	cc.TotalBytes = &rc.TotalBytes
 	cc.Reader = bufio.NewReader(rc)
-	if tcpConn, ok := conn.(*net.TCPConn); ok {
-		file, err := tcpConn.File()
-		if err == nil {
-			// closing file does not affect conn
-			defer file.Close()
-			cc.Fd = int(file.Fd())
-		}
-	}
 	return cc
 }
 
