@@ -17,8 +17,14 @@
 package obkv
 
 import (
+	"context"
+	"fmt"
+	"net/url"
+
 	"github.com/oceanbase/obkv-table-client-go/client"
+	"github.com/oceanbase/obkv-table-client-go/client/option"
 	"github.com/oceanbase/obkv-table-client-go/protocol"
+	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
 const (
@@ -28,16 +34,21 @@ const (
 	expireColumnName = "expire_ts"
 	indexColumnName  = "index"
 	isDataColumnName = "is_data"
+
+	jdbc_database  = "oceanbase"
+	table_sys_name = "__all_obkv_redis_command_to_tablename"
 )
 
 type Storage struct {
-	cli client.Client
-	cfg *Config
+	cli    client.Client
+	cfg    *Config
+	tables map[string]string
 }
 
 func NewStorage(cfg *Config) *Storage {
 	return &Storage{
-		cfg: cfg,
+		cfg:    cfg,
+		tables: make(map[string]string),
 	}
 }
 
@@ -56,6 +67,71 @@ func (s *Storage) Initialize() error {
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
 
 	s.cli = cli
+	return s.getTableNames()
+}
+
+func (s *Storage) getTableNameByCmdName(cmd string) (string, error) {
+	val, ok := s.tables[cmd]
+	if !ok {
+		return "", fmt.Errorf("%s not support", cmd)
+	}
+	return val, nil
+}
+
+func (s *Storage) getJDBCUrl() (client.Client, error) {
+	u, err := url.Parse(s.cfg.cliCfg.configUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	q := u.Query()
+	q.Set("database", jdbc_database)
+	u.RawQuery = q.Encode()
+
+	fmt.Println(u)
+	cli, err := client.NewClient(
+		u.String(),
+		s.cfg.cliCfg.fullUserName,
+		s.cfg.cliCfg.password,
+		s.cfg.cliCfg.sysUserName,
+		s.cfg.cliCfg.sysPassword,
+		s.cfg.cliCfg.cfg)
+	if err != nil {
+		return nil, err
+	}
+	return cli, nil
+}
+
+func (s *Storage) getTableNames() error {
+	jdbcHandler, err := s.getJDBCUrl()
+	if err != nil {
+		return err
+	}
+	startRowKey := []*table.Column{table.NewColumn("command_name", table.Min), table.NewColumn("table_name", table.Min)}
+	endRowKey := []*table.Column{table.NewColumn("command_name", table.Max), table.NewColumn("table_name", table.Max)}
+	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
+	resultIter, err := jdbcHandler.Query(
+		context.TODO(),
+		table_sys_name,
+		keyRanges,
+		option.WithQuerySelectColumns([]string{"command_name", "table_name"}),
+		option.WithQueryOffset(0),
+	)
+	if err != nil {
+		return err
+	}
+	iter, err := resultIter.Next()
+	for ; iter != nil && err == nil; iter, err = resultIter.Next() {
+		commandName := iter.Value("command_name").(string)
+		tableName := iter.Value("table_name").(string)
+		if _, ok := s.tables[commandName]; !ok {
+			s.tables[commandName] = tableName
+		}
+	}
+	fmt.Println(s.tables)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

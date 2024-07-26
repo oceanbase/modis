@@ -17,9 +17,10 @@
 package command
 
 import (
+	"math"
+
 	"github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/obkv-table-client-go/table"
-	"math"
 )
 
 func ListCmd(ctx *CmdContext) error {
@@ -30,7 +31,7 @@ func ListCmd(ctx *CmdContext) error {
 		table.NewColumn(keyColumnName, key),
 		table.NewColumn(indexColumnName, int64(math.MinInt64)),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, listTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}

@@ -20,9 +20,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"os"
 	"strconv"
+
+	"github.com/fsnotify/fsnotify"
 
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/log"
@@ -47,10 +48,10 @@ const (
 
 // Config for Tests
 const (
-	SqlUser     = "root@mysql"
+	SqlUser     = "root@mysql_tenant"
 	SqlPassWord = ""
-	SqlIp       = "127.0.0.1"
-	SqlPort     = "20903"
+	SqlIp       = "11.162.218.236"
+	SqlPort     = "55605"
 	SqlDatabase = "test"
 )
 

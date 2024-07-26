@@ -65,7 +65,7 @@ func Exists(ctx *CmdContext) error {
 
 func ExpireCommon(ctx *CmdContext) error {
 	var err error
-	ctx.OutContent, err = GenericCmdWithKey(ctx, stringTableName)
+	ctx.OutContent, err = GenericCmdWithKey(ctx, "get")
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}

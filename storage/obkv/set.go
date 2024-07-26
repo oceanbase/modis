@@ -46,8 +46,11 @@ const (
 )
 
 // SCard get the size of the key
-func (s *Storage) SCard(ctx context.Context, db int64, key []byte) (int64, error) {
-	tableName := setTableName
+func (s *Storage) SCard(ctx context.Context, cmdName string, db int64, key []byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -77,8 +80,11 @@ func (s *Storage) SCard(ctx context.Context, db int64, key []byte) (int64, error
 }
 
 // SRem remove the member from the key
-func (s *Storage) SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error) {
-	tableName := setTableName
+func (s *Storage) SRem(ctx context.Context, cmdName string, db int64, key []byte, members [][]byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	if len(members) == 0 {
 		return 0, nil
@@ -120,8 +126,11 @@ func (s *Storage) SRem(ctx context.Context, db int64, key []byte, members [][]by
 }
 
 // SIsmember check if is a member of the key
-func (s *Storage) SIsmember(ctx context.Context, db int64, key []byte, member []byte) (int, error) {
-	tableName := setTableName
+func (s *Storage) SIsmember(ctx context.Context, cmdName string, db int64, key []byte, member []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -147,8 +156,11 @@ func (s *Storage) SIsmember(ctx context.Context, db int64, key []byte, member []
 }
 
 // SMembers get all member
-func (s *Storage) SMembers(ctx context.Context, db int64, key []byte) ([][]byte, error) {
-	tableName := setTableName
+func (s *Storage) SMembers(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -194,8 +206,11 @@ func (s *Storage) SMembers(ctx context.Context, db int64, key []byte) ([][]byte,
 }
 
 // Smove move member from src key to dest key
-func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, member []byte) (int, error) {
-	tableName := setTableName
+func (s *Storage) Smove(ctx context.Context, cmdName string, db int64, src []byte, dst []byte, member []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// 1. Delete from src key
 	// Set rowKey columns
@@ -241,9 +256,12 @@ func (s *Storage) Smove(ctx context.Context, db int64, src []byte, dst []byte, m
 }
 
 // SPop randomly delete count members
-func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error) {
-	tableName := setTableName
-	members, err := s.SRandMember(ctx, db, key, count)
+func (s *Storage) SPop(ctx context.Context, cmdName string, db int64, key []byte, count int) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
+	members, err := s.SRandMember(ctx, cmdName, db, key, count)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +287,7 @@ func (s *Storage) SPop(ctx context.Context, db int64, key []byte, count int) ([]
 }
 
 // SRandMember randomly get count members
-func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error) {
+func (s *Storage) SRandMember(ctx context.Context, cmdName string, db int64, key []byte, count int) ([][]byte, error) {
 	members := make([][]byte, 0, count)
 	if count == 0 {
 		return members, nil
@@ -291,7 +309,10 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
 
 	// Create query
-	tableName := setTableName
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 	selectColumns := []string{memberColumnName}
 	resSet, err := s.cli.Query(
 		ctx,
@@ -305,7 +326,7 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 	}
 	defer resSet.Close()
 
-	cnt, err := s.SCard(ctx, db, key)
+	cnt, err := s.SCard(ctx, cmdName, db, key)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +361,7 @@ func (s *Storage) SRandMember(ctx context.Context, db int64, key []byte, count i
 func (s *Storage) setExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var existNum int64
 	for _, key := range keys {
-		num, err := s.SCard(ctx, db, key)
+		num, err := s.SCard(ctx, "scard", db, key)
 		if err != nil {
 			return 0, err
 		}
@@ -358,13 +379,13 @@ func (s *Storage) deleteSet(ctx context.Context, db int64, keys [][]byte) (int64
 	var deleteNum int64
 	for _, key := range keys {
 		// Get members by key
-		members, err := s.SMembers(ctx, db, key)
+		members, err := s.SMembers(ctx, "smembers", db, key)
 		if err != nil {
 			return 0, err
 		}
 
 		// Delete
-		num, err := s.SRem(ctx, db, key, members)
+		num, err := s.SRem(ctx, "srem", db, key, members)
 		if err != nil {
 			return 0, err
 		}
@@ -376,11 +397,14 @@ func (s *Storage) deleteSet(ctx context.Context, db int64, keys [][]byte) (int64
 
 // expireSet expire set table
 func (s *Storage) expireSet(ctx context.Context, db int64, key []byte, expire_ts table.TimeStamp) (int, error) {
-	tableName := setTableName
+	tableName, err := s.getTableNameByCmdName("smembers")
+	if err != nil {
+		return 0, err
+	}
 	var res = 0
 
 	// 1. Get all members
-	members, err := s.SMembers(ctx, db, key)
+	members, err := s.SMembers(ctx, "smembers", db, key)
 	if err != nil {
 		return 0, err
 	}
@@ -415,11 +439,14 @@ func (s *Storage) expireSet(ctx context.Context, db int64, key []byte, expire_ts
 
 // persistSet persist set table
 func (s *Storage) persistSet(ctx context.Context, db int64, key []byte) (int, error) {
-	tableName := setTableName
+	tableName, err := s.getTableNameByCmdName("smembers")
+	if err != nil {
+		return 0, err
+	}
 	var res = 0
 
 	// 1. Get all members
-	members, err := s.SMembers(ctx, db, key)
+	members, err := s.SMembers(ctx, "smembers", db, key)
 	if err != nil {
 		return 0, err
 	}
@@ -454,11 +481,14 @@ func (s *Storage) persistSet(ctx context.Context, db int64, key []byte) (int, er
 
 // ttlSet get expire time of set table
 func (s *Storage) ttlSet(ctx context.Context, db int64, key []byte) (time.Duration, error) {
-	tableName := setTableName
+	tableName, err := s.getTableNameByCmdName("smembers")
+	if err != nil {
+		return 0, err
+	}
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
 
 	// 1. Get all members
-	members, err := s.SMembers(ctx, db, key)
+	members, err := s.SMembers(ctx, "smembers", db, key)
 	if err != nil {
 		return 0, err
 	}

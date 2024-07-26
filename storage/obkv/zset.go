@@ -58,7 +58,7 @@ func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, key),
 		}
 
-		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		outContent, err := s.ObServerCmd(ctx, "zremrange", rowKey, []byte(encodedArray))
 		if err != nil {
 			return 0, err
 		}
@@ -91,7 +91,7 @@ func (s *Storage) deleteZSet(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, key),
 		}
 
-		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		outContent, err := s.ObServerCmd(ctx, "zremrange", rowKey, []byte(encodedArray))
 		if err != nil {
 			return 0, err
 		}

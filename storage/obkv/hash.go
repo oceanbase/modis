@@ -49,8 +49,11 @@ const (
 )
 
 // HGet hash get
-func (s *Storage) HGet(ctx context.Context, db int64, key []byte, field []byte) ([]byte, error) {
-	tableName := hashTableName
+func (s *Storage) HGet(ctx context.Context, cmdName string, db int64, key []byte, field []byte) ([]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -76,8 +79,11 @@ func (s *Storage) HGet(ctx context.Context, db int64, key []byte, field []byte) 
 }
 
 // HDel hash multi delete
-func (s *Storage) HDel(ctx context.Context, db int64, key []byte, fields [][]byte) (int64, error) {
-	tableName := hashTableName
+func (s *Storage) HDel(ctx context.Context, cmdName string, db int64, key []byte, fields [][]byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	if len(fields) == 0 {
 		return 0, nil
@@ -119,8 +125,11 @@ func (s *Storage) HDel(ctx context.Context, db int64, key []byte, fields [][]byt
 }
 
 // HGetAll hash get all
-func (s *Storage) HGetAll(ctx context.Context, db int64, key []byte) ([][]byte, error) {
-	tableName := hashTableName
+func (s *Storage) HGetAll(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -166,8 +175,11 @@ func (s *Storage) HGetAll(ctx context.Context, db int64, key []byte) ([][]byte, 
 }
 
 // HKeys hash keys
-func (s *Storage) HKeys(ctx context.Context, db int64, key []byte) ([][]byte, error) {
-	tableName := hashTableName
+func (s *Storage) HKeys(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -212,8 +224,11 @@ func (s *Storage) HKeys(ctx context.Context, db int64, key []byte) ([][]byte, er
 }
 
 // HVals hash values
-func (s *Storage) HVals(ctx context.Context, db int64, key []byte) ([][]byte, error) {
-	tableName := hashTableName
+func (s *Storage) HVals(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -258,8 +273,11 @@ func (s *Storage) HVals(ctx context.Context, db int64, key []byte) ([][]byte, er
 }
 
 // HLen hash length
-func (s *Storage) HLen(ctx context.Context, db int64, key []byte) (int64, error) {
-	tableName := hashTableName
+func (s *Storage) HLen(ctx context.Context, cmdName string, db int64, key []byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Prepare key range
 	startRowKey := []*table.Column{
@@ -289,8 +307,11 @@ func (s *Storage) HLen(ctx context.Context, db int64, key []byte) (int64, error)
 }
 
 // HSetNx hash set if not exist
-func (s *Storage) HSetNx(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int, error) {
-	tableName := hashTableName
+func (s *Storage) HSetNx(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -306,7 +327,7 @@ func (s *Storage) HSetNx(ctx context.Context, db int64, key []byte, field []byte
 	}
 
 	// Execute
-	_, err := s.cli.Insert(ctx, tableName, rowKey, mutates)
+	_, err = s.cli.Insert(ctx, tableName, rowKey, mutates)
 	if err != nil {
 		errString := err.Error()
 		errMsg := "errCode:-5024"
@@ -320,8 +341,11 @@ func (s *Storage) HSetNx(ctx context.Context, db int64, key []byte, field []byte
 }
 
 // HMGet hash multi get
-func (s *Storage) HMGet(ctx context.Context, db int64, key []byte, fields [][]byte) ([][]byte, error) {
-	tableName := hashTableName
+func (s *Storage) HMGet(ctx context.Context, cmdName string, db int64, key []byte, fields [][]byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 
 	// Create batch executor
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
@@ -367,8 +391,11 @@ func (s *Storage) HMGet(ctx context.Context, db int64, key []byte, fields [][]by
 // HIncrBy Add value from the value of the key.
 // If the key does not exist, value is written and value is returned
 // Returns the value add value when key is present;
-func (s *Storage) HIncrBy(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int64, error) {
-	tableName := hashTableName
+func (s *Storage) HIncrBy(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -401,8 +428,11 @@ func (s *Storage) HIncrBy(ctx context.Context, db int64, key []byte, field []byt
 // HIncrByFloat Add value from the value of the key.
 // If the key does not exist, value is written and value is returned
 // Returns the value add value when key is present;
-func (s *Storage) HIncrByFloat(ctx context.Context, db int64, key []byte, field []byte, value []byte) (float64, error) {
-	tableName := hashTableName
+func (s *Storage) HIncrByFloat(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (float64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -436,7 +466,7 @@ func (s *Storage) HIncrByFloat(ctx context.Context, db int64, key []byte, field 
 func (s *Storage) hashExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var existNum int64
 	for _, key := range keys {
-		num, err := s.HLen(ctx, db, key)
+		num, err := s.HLen(ctx, "hlen", db, key)
 		if err != nil {
 			return 0, err
 		}
@@ -454,13 +484,13 @@ func (s *Storage) deleteHash(ctx context.Context, db int64, keys [][]byte) (int6
 	var deleteNum int64
 	for _, key := range keys {
 		// Get fields by key
-		fields, err := s.HKeys(ctx, db, key)
+		fields, err := s.HKeys(ctx, "hkeys", db, key)
 		if err != nil {
 			return 0, err
 		}
 
 		// Delete
-		num, err := s.HDel(ctx, db, key, fields)
+		num, err := s.HDel(ctx, "hdel", db, key, fields)
 		if err != nil {
 			return 0, err
 		}
@@ -472,11 +502,14 @@ func (s *Storage) deleteHash(ctx context.Context, db int64, keys [][]byte) (int6
 
 // expireHash expire hash table
 func (s *Storage) expireHash(ctx context.Context, db int64, key []byte, expire_ts table.TimeStamp) (int, error) {
-	tableName := hashTableName
+	tableName, err := s.getTableNameByCmdName("hkeys")
+	if err != nil {
+		return 0, err
+	}
 	var res = 0
 
 	// 1. Get all fields
-	fields, err := s.HKeys(ctx, db, key)
+	fields, err := s.HKeys(ctx, "hkeys", db, key)
 	if err != nil {
 		return 0, err
 	}
@@ -511,11 +544,14 @@ func (s *Storage) expireHash(ctx context.Context, db int64, key []byte, expire_t
 
 // persistHash persist hash table
 func (s *Storage) persistHash(ctx context.Context, db int64, key []byte) (int, error) {
-	tableName := hashTableName
+	tableName, err := s.getTableNameByCmdName("hkeys")
+	if err != nil {
+		return 0, err
+	}
 	var res = 0
 
 	// 1. Get all fields
-	fields, err := s.HKeys(ctx, db, key)
+	fields, err := s.HKeys(ctx, "hkeys", db, key)
 	if err != nil {
 		return 0, err
 	}
@@ -550,11 +586,14 @@ func (s *Storage) persistHash(ctx context.Context, db int64, key []byte) (int, e
 
 // ttlHash get expire time of hash table
 func (s *Storage) ttlHash(ctx context.Context, db int64, key []byte) (time.Duration, error) {
-	tableName := hashTableName
+	tableName, err := s.getTableNameByCmdName("hkeys")
+	if err != nil {
+		return 0, err
+	}
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
 
 	// 1. Get all fields
-	fields, err := s.HKeys(ctx, db, key)
+	fields, err := s.HKeys(ctx, "hkeys", db, key)
 	if err != nil {
 		return 0, err
 	}

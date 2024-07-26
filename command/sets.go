@@ -29,7 +29,7 @@ import (
 func SMembers(ctx *CmdContext) error {
 	key := ctx.Args[0]
 
-	values, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	values, err := ctx.CodecCtx.DB.Storage.SMembers(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -59,7 +59,7 @@ func SRandMember(ctx *CmdContext) error {
 		return nil
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
+	members, err := ctx.CodecCtx.DB.Storage.SRandMember(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else if len(ctx.Args) == 1 {
@@ -79,7 +79,7 @@ func SRandMember(ctx *CmdContext) error {
 // SCard returns the set cardinality (number of elements) of the set stored at key
 func SCard(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	size, err := ctx.CodecCtx.DB.Storage.SCard(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	size, err := ctx.CodecCtx.DB.Storage.SCard(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -92,7 +92,7 @@ func SCard(ctx *CmdContext) error {
 func SIsmember(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	member := ctx.Args[1]
-	returnValue, err := ctx.CodecCtx.DB.Storage.SIsmember(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, member)
+	returnValue, err := ctx.CodecCtx.DB.Storage.SIsmember(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, member)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -119,7 +119,7 @@ func SPop(ctx *CmdContext) error {
 		}
 	}
 
-	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, count)
+	members, err := ctx.CodecCtx.DB.Storage.SPop(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, count)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else if len(ctx.Args) == 1 {
@@ -143,7 +143,7 @@ func SRem(ctx *CmdContext) error {
 	for _, member := range ctx.Args[1:] {
 		members = append(members, []byte(member))
 	}
-	returnValue, err := ctx.CodecCtx.DB.Storage.SRem(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, members)
+	returnValue, err := ctx.CodecCtx.DB.Storage.SRem(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, members)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -158,7 +158,7 @@ func SMove(ctx *CmdContext) error {
 	dstKey := ctx.Args[1]
 	member := ctx.Args[2]
 
-	res, err := ctx.CodecCtx.DB.Storage.Smove(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, srcKey, dstKey, member)
+	res, err := ctx.CodecCtx.DB.Storage.Smove(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, srcKey, dstKey, member)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -174,7 +174,7 @@ func SetCmdWithKey(ctx *CmdContext) error {
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
 		table.NewColumn(keyColumnName, key),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, setTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}

@@ -20,6 +20,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+
 	"github.com/fsnotify/fsnotify"
 
 	// "net/http"
@@ -72,7 +73,7 @@ func main() {
 
 	s, err := storage.Open(&cfg.Storage.ObkvConfig)
 	if err != nil {
-		fmt.Println("open DB failed")
+		fmt.Println("open DB failed", err.Error())
 		log.Fatal("main", "", "open DB failed", log.Errors(err))
 		os.Exit(1)
 	}
