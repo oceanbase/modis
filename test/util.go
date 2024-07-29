@@ -48,10 +48,10 @@ const (
 
 // Config for Tests
 const (
-	SqlUser     = "root@mysql_tenant"
+	SqlUser     = "root@mysql"
 	SqlPassWord = ""
-	SqlIp       = "11.162.218.236"
-	SqlPort     = "55605"
+	SqlIp       = "20903"
+	SqlPort     = "20903"
 	SqlDatabase = "test"
 )
 
