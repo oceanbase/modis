@@ -39,10 +39,6 @@ strings table model:
 		partition by key(db, rkey) partitions 3;
 */
 
-const (
-	stringTableName = "modis_string_table"
-)
-
 // Get value by key. Return value if exists, nil if not exists
 func (s *Storage) Get(ctx context.Context, cmdName string, db int64, key []byte) ([]byte, error) {
 	tableName, err := s.getTableNameByCmdName(cmdName)

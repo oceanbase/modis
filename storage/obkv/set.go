@@ -41,7 +41,6 @@ CREATE TABLE modis_set_table(
 */
 
 const (
-	setTableName     = "modis_set_table"
 	memberColumnName = "member"
 )
 

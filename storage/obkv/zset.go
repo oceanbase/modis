@@ -40,10 +40,6 @@ CREATE TABLE modis_zset_table(
   PARTITION BY KEY(db, rkey) PARTITIONS 3;
 */
 
-const (
-	zsetTableName = "modis_zset_table"
-)
-
 // zsetExists check the number of keys that exist in zset table
 func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var existNum int64 = 0

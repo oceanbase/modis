@@ -50,7 +50,7 @@ const (
 const (
 	SqlUser     = "root@mysql"
 	SqlPassWord = ""
-	SqlIp       = "20903"
+	SqlIp       = "127.0.0.1"
 	SqlPort     = "20903"
 	SqlDatabase = "test"
 )

@@ -42,10 +42,6 @@ PARTITION BY KEY(db, rkey)
 PARTITIONS 3;
 */
 
-const (
-	listTableName = "modis_list_table"
-)
-
 // listExists check the number of keys that exist in list table
 func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var exist_key_count int64 = 0

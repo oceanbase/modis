@@ -44,7 +44,6 @@ CREATE TABLE modis_hash_table(
 */
 
 const (
-	hashTableName   = "modis_hash_table"
 	fieldColumnName = "field"
 )
 

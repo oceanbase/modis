@@ -87,8 +87,6 @@ func (s *Storage) getJDBCUrl() (client.Client, error) {
 	q := u.Query()
 	q.Set("database", jdbc_database)
 	u.RawQuery = q.Encode()
-
-	fmt.Println(u)
 	cli, err := client.NewClient(
 		u.String(),
 		s.cfg.cliCfg.fullUserName,
@@ -128,7 +126,6 @@ func (s *Storage) getTableNames() error {
 			s.tables[commandName] = tableName
 		}
 	}
-	fmt.Println(s.tables)
 	if err != nil {
 		return err
 	}
