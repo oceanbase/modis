@@ -30,7 +30,7 @@ import (
 // Get the value of key
 func Get(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else if val == nil {
@@ -46,7 +46,7 @@ func Set(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	value := ctx.Args[1]
 
-	err := ctx.CodecCtx.DB.Storage.Set(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
+	err := ctx.CodecCtx.DB.Storage.Set(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -61,7 +61,7 @@ func MGet(ctx *CmdContext) error {
 	keys := make([][]byte, count)
 	copy(keys, ctx.Args)
 
-	resValues, err := ctx.CodecCtx.DB.Storage.MGet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, keys)
+	resValues, err := ctx.CodecCtx.DB.Storage.MGet(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, keys)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -83,7 +83,7 @@ func MSet(ctx *CmdContext) error {
 			setValues[util.BytesToString(kv[0])] = kv[1]
 		}
 
-		_, err := ctx.CodecCtx.DB.Storage.MSet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, setValues)
+		_, err := ctx.CodecCtx.DB.Storage.MSet(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, setValues)
 		if err != nil {
 			ctx.OutContent = resp.EncError("ERR " + err.Error())
 		} else {
@@ -96,7 +96,7 @@ func MSet(ctx *CmdContext) error {
 // Strlen returns the length of the string value stored at key
 func Strlen(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -109,7 +109,7 @@ func Strlen(ctx *CmdContext) error {
 func Append(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	value := ctx.Args[1]
-	length, err := ctx.CodecCtx.DB.Storage.Append(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
+	length, err := ctx.CodecCtx.DB.Storage.Append(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -122,7 +122,7 @@ func Append(ctx *CmdContext) error {
 func SetNx(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	value := ctx.Args[1]
-	resValue, err := ctx.CodecCtx.DB.Storage.SetNx(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
+	resValue, err := ctx.CodecCtx.DB.Storage.SetNx(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -147,7 +147,7 @@ func SetEx(ctx *CmdContext) error {
 	}
 	expireTimes := ui * uint64(time.Second)
 
-	err = ctx.CodecCtx.DB.Storage.SetEx(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, expireTimes, value)
+	err = ctx.CodecCtx.DB.Storage.SetEx(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, expireTimes, value)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -170,7 +170,7 @@ func PSetEx(ctx *CmdContext) error {
 	}
 	expireTimeMs := ui * uint64(time.Millisecond)
 
-	err = ctx.CodecCtx.DB.Storage.PSetEx(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, expireTimeMs, value)
+	err = ctx.CodecCtx.DB.Storage.PSetEx(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, expireTimeMs, value)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -182,7 +182,7 @@ func PSetEx(ctx *CmdContext) error {
 // Incr increments the integer value of a key  by one
 func Incr(ctx *CmdContext) error {
 	key := []byte(ctx.Args[0])
-	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte("1"))
+	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, []byte("1"))
 	if err != nil {
 		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
@@ -202,7 +202,7 @@ func IncrBy(ctx *CmdContext) error {
 		return nil
 	}
 
-	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
+	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
 		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
@@ -222,7 +222,7 @@ func IncrByFloat(ctx *CmdContext) error {
 		return nil
 	}
 
-	f64, err := ctx.CodecCtx.DB.Storage.IncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, value)
+	f64, err := ctx.CodecCtx.DB.Storage.IncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, value)
 	if err != nil {
 		if strings.Contains(err.Error(), "-5114") {
 			ctx.OutContent = resp.EncError("ERR value is not a valid float")
@@ -238,7 +238,7 @@ func IncrByFloat(ctx *CmdContext) error {
 // Decr decrements the integer value of a key by one
 func Decr(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte("-1"))
+	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, []byte("-1"))
 	if err != nil {
 		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
@@ -257,7 +257,7 @@ func DecrBy(ctx *CmdContext) error {
 		return nil
 	}
 
-	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, []byte(strconv.FormatInt(-delta, 10)))
+	res, err := ctx.CodecCtx.DB.Storage.IncrBy(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, []byte(strconv.FormatInt(-delta, 10)))
 	if err != nil {
 		ctx.OutContent = resp.ResponseIntegerErr
 	} else {
@@ -275,7 +275,7 @@ func GetBit(ctx *CmdContext) error {
 		return nil
 	}
 
-	res, err := ctx.CodecCtx.DB.Storage.GetBit(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, offset)
+	res, err := ctx.CodecCtx.DB.Storage.GetBit(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, offset)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -287,7 +287,7 @@ func GetBit(ctx *CmdContext) error {
 // BitCount counts the number of set bits (population counting) in a string.
 func BitCount(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else if val == nil {
@@ -343,7 +343,7 @@ func SetRange(ctx *CmdContext) error {
 	}
 
 	// 1. get
-	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 		return nil
@@ -357,7 +357,7 @@ func SetRange(ctx *CmdContext) error {
 	}
 
 	// 3. insert
-	err = ctx.CodecCtx.DB.Storage.Set(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, resBytes)
+	err = ctx.CodecCtx.DB.Storage.Set(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, resBytes)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -370,7 +370,7 @@ func SetRange(ctx *CmdContext) error {
 func GetRange(ctx *CmdContext) error {
 	key := ctx.Args[0]
 
-	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	val, err := ctx.CodecCtx.DB.Storage.Get(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 		return nil
@@ -406,7 +406,7 @@ func StringCmdWithKey(ctx *CmdContext) error {
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
 		table.NewColumn(keyColumnName, key),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, stringTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}

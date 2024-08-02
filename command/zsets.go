@@ -17,12 +17,13 @@
 package command
 
 import (
-	"github.com/oceanbase/modis/protocol/resp"
-	"github.com/oceanbase/obkv-table-client-go/table"
-	"github.com/oceanbase/obkv-table-client-go/util"
 	"math"
 	"strconv"
 	"strings"
+
+	"github.com/oceanbase/modis/protocol/resp"
+	"github.com/oceanbase/obkv-table-client-go/table"
+	"github.com/oceanbase/obkv-table-client-go/util"
 )
 
 func ZSetCmdWithKey(ctx *CmdContext) error {
@@ -32,7 +33,7 @@ func ZSetCmdWithKey(ctx *CmdContext) error {
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
 		table.NewColumn(keyColumnName, key),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
@@ -46,7 +47,7 @@ func ZIncrBy(ctx *CmdContext) error {
 		table.NewColumn(keyColumnName, ctx.Args[0]),
 		table.NewColumn(memberColumnName, ctx.Args[2]),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
@@ -60,7 +61,7 @@ func ZSetCmdWithKeyMember(ctx *CmdContext) error {
 		table.NewColumn(keyColumnName, ctx.Args[0]),
 		table.NewColumn(memberColumnName, ctx.Args[1]),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}
@@ -128,7 +129,7 @@ func ZRangeByScore(ctx *CmdContext) error {
 		new_args = append(new_args, ctx.Args...)
 		ctx.PlainReq = util.StringToBytes(resp.EncArray(new_args))
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, zsetTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())

@@ -18,13 +18,18 @@ package obkv
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/oceanbase/modis/util"
 	"github.com/oceanbase/obkv-table-client-go/client"
 	"github.com/oceanbase/obkv-table-client-go/client/option"
 	"github.com/oceanbase/obkv-table-client-go/protocol"
 	"github.com/oceanbase/obkv-table-client-go/table"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -34,6 +39,10 @@ const (
 	expireColumnName = "expire_ts"
 	indexColumnName  = "index"
 	isDataColumnName = "is_data"
+
+	driver         = "mysql"
+	dsnFormat      = "root@%s:%s@tcp(%s:%d)/oceanbase"
+	table_sys_name = "DBA_OB_KV_REDIS_TABLE"
 )
 
 // for prefetch route
@@ -55,13 +64,15 @@ var (
 )
 
 type Storage struct {
-	cli client.Client
-	cfg *Config
+	cli    client.Client
+	cfg    *Config
+	tables map[string]string
 }
 
 func NewStorage(cfg *Config) *Storage {
 	return &Storage{
-		cfg: cfg,
+		cfg:    cfg,
+		tables: make(map[string]string),
 	}
 }
 
@@ -107,8 +118,87 @@ func (s *Storage) Initialize() error {
 	}
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
 	s.cli = cli
-	err = s.tryPrefetchRoute()
+	return s.getTableNames()
+}
+
+func (s *Storage) getTableNameByCmdName(cmd string) (string, error) {
+	val, ok := s.tables[cmd]
+	if !ok {
+		return "", fmt.Errorf("%s not support", cmd)
+	}
+	return val, nil
+}
+
+func (s *Storage) getServerAddr() (*util.ObServerAddr, error) {
+	var resp util.ObHttpRslistResponse
+	err := util.GetConfigServerResponseOrNull(s.cfg.cliCfg.configUrl,
+		s.cfg.cliCfg.cfg.RsListHttpGetTimeout,
+		s.cfg.cliCfg.cfg.RsListHttpGetRetryTimes,
+		s.cfg.cliCfg.cfg.RsListHttpGetRetryInterval,
+		&resp)
 	if err != nil {
+		return nil, errors.WithMessagef(err, "get remote ocp response, url:%s", s.cfg.cliCfg.configUrl)
+	}
+	rslist := util.NewRslist()
+
+	for _, server := range resp.Data.RsList {
+		// split ip and port, server.Address(xx.xx.xx.xx:xx)
+		res := strings.Split(server.Address, ":")
+		if len(res) != 2 {
+			return nil, errors.Errorf("fail to split ip and port, server:%s", server.Address)
+		}
+		ip := res[0]
+		if ip == "172.16.46.180" {
+			ip = "115.29.212.38"
+			println(ip)
+		}
+		svrPort, err := strconv.Atoi(res[1])
+		if err != nil {
+			return nil, errors.Errorf("fail to convert server port to int, port:%s", res[1])
+		}
+		serverAddr := util.NewObServerAddr(ip, server.SqlPort, svrPort)
+		rslist.Append(serverAddr)
+	}
+
+	if rslist.Size() == 0 {
+		return nil, errors.Errorf("failed to load Rslist, url:%s", s.cfg.cliCfg.configUrl)
+	}
+	return rslist.Get(), nil
+}
+
+func (s *Storage) getTableNames() error {
+	serverAddr, err := s.getServerAddr()
+	if err != nil {
+		return errors.New("fail to get server addr")
+	}
+
+	tenantName := util.GetTenantName(s.cfg.cliCfg.fullUserName)
+	if len(tenantName) == 0 {
+		return errors.Errorf("fullUserName not invalid %s", s.cfg.cliCfg.fullUserName)
+	}
+
+	dsn := fmt.Sprintf(dsnFormat, tenantName, s.cfg.cliCfg.password, serverAddr.Ip(), serverAddr.SqlPort())
+	db, err := sql.Open(driver, dsn)
+	if err != nil {
+		return err
+	}
+
+	rows, err := db.Query("select command_name, table_name from DBA_OB_KV_REDIS_TABLE")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var commandName string
+		var tableName string
+		err := rows.Scan(&commandName, &tableName)
+		if err != nil {
+			return err
+		}
+		s.tables[commandName] = tableName
+	}
+	if err = rows.Err(); err != nil {
 		return err
 	}
 	return nil

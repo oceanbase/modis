@@ -77,7 +77,7 @@ func main() {
 	// init storage
 	s, err := storage.Open(&cfg.Storage.ObkvConfig)
 	if err != nil {
-		fmt.Println("open DB failed, ", err)
+		fmt.Println("open DB failed", err.Error())
 		log.Fatal("main", "", "open DB failed", log.Errors(err))
 		os.Exit(1)
 	}

@@ -20,9 +20,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"os"
 	"strconv"
+
+	"github.com/fsnotify/fsnotify"
 
 	"github.com/oceanbase/modis/config"
 	"github.com/oceanbase/modis/log"

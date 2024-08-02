@@ -131,6 +131,7 @@ func (s *Storage) Exists(ctx context.Context, db int64, keys [][]byte) (int64, e
 // Delete delete all keys
 func (s *Storage) Delete(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var deleteNum int64
+	// TODO:
 	num, err := s.deleteString(ctx, db, keys)
 	if err != nil {
 		return 0, err
@@ -176,7 +177,7 @@ func (s *Storage) Expire(ctx context.Context, db int64, key []byte, at time.Time
 	} else if val != nil {
 		if strings.Contains(string(val), "string") {
 			// expire string
-			_, err = s.expireString(ctx, db, key, table.TimeStamp(at))
+			_, err = s.expireString(ctx, "get", db, key, table.TimeStamp(at))
 			if err != nil {
 				return 0, err
 			}
@@ -240,7 +241,7 @@ func (s *Storage) Persist(ctx context.Context, db int64, key []byte) (int, error
 	}
 
 	// persist string
-	res, err = s.persistString(ctx, db, key)
+	res, err = s.persistString(ctx, "get", db, key)
 	if err != nil {
 		return 0, err
 	}
@@ -286,4 +287,3 @@ func (s *Storage) Persist(ctx context.Context, db int64, key []byte) (int, error
 
 	return 0, nil
 }
-

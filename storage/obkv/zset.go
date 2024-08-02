@@ -40,10 +40,6 @@ CREATE TABLE modis_zset_table(
   PARTITION BY KEY(db, rkey) PARTITIONS 3;
 */
 
-const (
-	zsetTableName = "modis_zset_table"
-)
-
 // zsetExists check the number of keys that exist in zset table
 func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var existNum int64 = 0
@@ -58,7 +54,7 @@ func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, key),
 		}
 
-		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		outContent, err := s.ObServerCmd(ctx, "zremrange", rowKey, []byte(encodedArray))
 		if err != nil {
 			return 0, err
 		}
@@ -91,7 +87,7 @@ func (s *Storage) deleteZSet(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, key),
 		}
 
-		outContent, err := s.ObServerCmd(ctx, zsetTableName, rowKey, []byte(encodedArray))
+		outContent, err := s.ObServerCmd(ctx, "zremrange", rowKey, []byte(encodedArray))
 		if err != nil {
 			return 0, err
 		}
