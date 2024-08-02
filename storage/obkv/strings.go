@@ -39,14 +39,12 @@ strings table model:
 		partition by key(db, rkey) partitions 3;
 */
 
-const (
-	stringTableName = "modis_string_table"
-)
-
 // Get value by key. Return value if exists, nil if not exists
-func (s *Storage) Get(ctx context.Context, db int64, key []byte) ([]byte, error) {
-	tableName := stringTableName
-
+func (s *Storage) Get(ctx context.Context, cmdName string, db int64, key []byte) ([]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 	// Set rowKey columns
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
@@ -69,8 +67,11 @@ func (s *Storage) Get(ctx context.Context, db int64, key []byte) ([]byte, error)
 }
 
 // MGet obtain key-value pairs in batches. If keys do not exist, null is returned.
-func (s *Storage) MGet(ctx context.Context, db int64, keys [][]byte) ([][]byte, error) {
-	tableName := stringTableName
+func (s *Storage) MGet(ctx context.Context, cmdName string, db int64, keys [][]byte) ([][]byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return nil, err
+	}
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
 
 	// Add get operations
@@ -108,8 +109,11 @@ func (s *Storage) MGet(ctx context.Context, db int64, keys [][]byte) ([][]byte, 
 
 // MSet set key pairs in batches. If the key already exists, the old value is overwritten.
 // Returns the number of keys successfully set
-func (s *Storage) MSet(ctx context.Context, db int64, kv map[string][]byte) (int, error) {
-	tableName := stringTableName
+func (s *Storage) MSet(ctx context.Context, cmdName string, db int64, kv map[string][]byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
 
 	// Add insert operations
@@ -139,8 +143,11 @@ func (s *Storage) MSet(ctx context.Context, db int64, kv map[string][]byte) (int
 }
 
 // PSetEx set the value and expiration time (in milliseconds), update key if the key already exists.
-func (s *Storage) PSetEx(ctx context.Context, db int64, key []byte, expireTime uint64, value []byte) error {
-	tableName := stringTableName
+func (s *Storage) PSetEx(ctx context.Context, cmdName string, db int64, key []byte, expireTime uint64, value []byte) error {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -155,7 +162,7 @@ func (s *Storage) PSetEx(ctx context.Context, db int64, key []byte, expireTime u
 	}
 
 	// Execute
-	_, err := s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
+	_, err = s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
 	if err != nil {
 		return err
 	}
@@ -164,9 +171,11 @@ func (s *Storage) PSetEx(ctx context.Context, db int64, key []byte, expireTime u
 }
 
 // Set the value of the specified key, insert if it does not exist and update if it does.
-func (s *Storage) Set(ctx context.Context, db int64, key []byte, value []byte) error {
-	tableName := stringTableName
-
+func (s *Storage) Set(ctx context.Context, cmdName string, db int64, key []byte, value []byte) error {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return err
+	}
 	// Set rowKey columns
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, db),
@@ -180,7 +189,7 @@ func (s *Storage) Set(ctx context.Context, db int64, key []byte, value []byte) e
 	}
 
 	// Execute
-	_, err := s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
+	_, err = s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
 	if err != nil {
 		return err
 	}
@@ -188,8 +197,11 @@ func (s *Storage) Set(ctx context.Context, db int64, key []byte, value []byte) e
 }
 
 // SetEx set the value and expiration time (in second), update key if the key already exists.
-func (s *Storage) SetEx(ctx context.Context, db int64, key []byte, expireTime uint64, value []byte) error {
-	tableName := stringTableName
+func (s *Storage) SetEx(ctx context.Context, cmdName string, db int64, key []byte, expireTime uint64, value []byte) error {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -204,7 +216,7 @@ func (s *Storage) SetEx(ctx context.Context, db int64, key []byte, expireTime ui
 	}
 
 	// Execute
-	_, err := s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
+	_, err = s.cli.InsertOrUpdate(ctx, tableName, rowKey, mutates)
 	if err != nil {
 		return err
 	}
@@ -213,8 +225,11 @@ func (s *Storage) SetEx(ctx context.Context, db int64, key []byte, expireTime ui
 }
 
 // SetNx set a key-value pair, returning 0 if the key already exists and setting a value if the key does not exist.
-func (s *Storage) SetNx(ctx context.Context, db int64, key []byte, value []byte) (int, error) {
-	tableName := stringTableName
+func (s *Storage) SetNx(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -228,7 +243,7 @@ func (s *Storage) SetNx(ctx context.Context, db int64, key []byte, value []byte)
 	}
 
 	// Execute, return 0 if key exist, return 1 if key not exist.
-	_, err := s.cli.Insert(ctx, tableName, rowKey, mutates)
+	_, err = s.cli.Insert(ctx, tableName, rowKey, mutates)
 	if err != nil {
 		errString := err.Error()
 		errMsg := "errCode:-5024"
@@ -243,8 +258,11 @@ func (s *Storage) SetNx(ctx context.Context, db int64, key []byte, value []byte)
 }
 
 // Append appends a string to the value of the key. Returns the length of the final value.
-func (s *Storage) Append(ctx context.Context, db int64, key []byte, value []byte) (int, error) {
-	tableName := stringTableName
+func (s *Storage) Append(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -269,8 +287,11 @@ func (s *Storage) Append(ctx context.Context, db int64, key []byte, value []byte
 // IncrBy Add value from the value of the key.
 // If the key does not exist, value is written and value is returned
 // Returns the value add value when key is present;
-func (s *Storage) IncrBy(ctx context.Context, db int64, key []byte, value []byte) (int64, error) {
-	tableName := stringTableName
+func (s *Storage) IncrBy(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -302,8 +323,11 @@ func (s *Storage) IncrBy(ctx context.Context, db int64, key []byte, value []byte
 // IncrByFloat Add value from the value of the key.
 // If the key does not exist, value is written and value is returned
 // Returns the value add value when key is present;
-func (s *Storage) IncrByFloat(ctx context.Context, db int64, key []byte, value []byte) (float64, error) {
-	tableName := stringTableName
+func (s *Storage) IncrByFloat(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (float64, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -333,8 +357,11 @@ func (s *Storage) IncrByFloat(ctx context.Context, db int64, key []byte, value [
 }
 
 // GetBit get the bit value of the specified offset position in the value of the specified key.
-func (s *Storage) GetBit(ctx context.Context, db int64, key []byte, offset int) (byte, error) {
-	tableName := stringTableName
+func (s *Storage) GetBit(ctx context.Context, cmdName string, db int64, key []byte, offset int) (byte, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -367,7 +394,7 @@ func (s *Storage) GetBit(ctx context.Context, db int64, key []byte, offset int) 
 // stringExists check the number of keys that exist in string table
 func (s *Storage) stringExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var num int64 = 0
-	values, err := s.MGet(ctx, db, keys)
+	values, err := s.MGet(ctx, "mget", db, keys)
 	if err != nil {
 		return 0, err
 	}
@@ -382,7 +409,10 @@ func (s *Storage) stringExists(ctx context.Context, db int64, keys [][]byte) (in
 
 // deleteString delete string table
 func (s *Storage) deleteString(ctx context.Context, db int64, keys [][]byte) (int64, error) {
-	tableName := stringTableName
+	tableName, err := s.getTableNameByCmdName("get")
+	if err != nil {
+		return 0, err
+	}
 	batchExecutor := s.cli.NewBatchExecutor(tableName)
 
 	// Add delete operations
@@ -414,8 +444,11 @@ func (s *Storage) deleteString(ctx context.Context, db int64, keys [][]byte) (in
 }
 
 // expireString expire string table
-func (s *Storage) expireString(ctx context.Context, db int64, key []byte, expire_ts table.TimeStamp) (int, error) {
-	tableName := stringTableName
+func (s *Storage) expireString(ctx context.Context, cmdName string, db int64, key []byte, expire_ts table.TimeStamp) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -438,8 +471,11 @@ func (s *Storage) expireString(ctx context.Context, db int64, key []byte, expire
 }
 
 // persistString persist string table
-func (s *Storage) persistString(ctx context.Context, db int64, key []byte) (int, error) {
-	tableName := stringTableName
+func (s *Storage) persistString(ctx context.Context, cmdName string, db int64, key []byte) (int, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{
@@ -462,8 +498,11 @@ func (s *Storage) persistString(ctx context.Context, db int64, key []byte) (int,
 }
 
 // ttlString get expire time of string table
-func (s *Storage) ttlString(ctx context.Context, db int64, key []byte) (time.Duration, error) {
-	tableName := stringTableName
+func (s *Storage) ttlString(ctx context.Context, cmdName string, db int64, key []byte) (time.Duration, error) {
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return 0, err
+	}
 
 	// Set rowKey columns
 	rowKey := []*table.Column{

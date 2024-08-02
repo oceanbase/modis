@@ -33,7 +33,7 @@ func HDel(ctx *CmdContext) error {
 	fields := make([][]byte, len(kvs))
 	copy(fields, kvs)
 
-	deleteNum, err := ctx.CodecCtx.DB.Storage.HDel(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, fields)
+	deleteNum, err := ctx.CodecCtx.DB.Storage.HDel(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, fields)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -50,7 +50,7 @@ func HSetNX(ctx *CmdContext) error {
 	} else {
 		field := ctx.Args[1]
 		value := ctx.Args[2]
-		insertCount, err := ctx.CodecCtx.DB.Storage.HSetNx(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field, value)
+		insertCount, err := ctx.CodecCtx.DB.Storage.HSetNx(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, field, value)
 		if err != nil {
 			ctx.OutContent = resp.EncError("ERR " + err.Error())
 		} else {
@@ -64,7 +64,7 @@ func HSetNX(ctx *CmdContext) error {
 func HGet(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	field := ctx.Args[1]
-	val, err := ctx.CodecCtx.DB.Storage.HGet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field)
+	val, err := ctx.CodecCtx.DB.Storage.HGet(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, field)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -80,7 +80,7 @@ func HGet(ctx *CmdContext) error {
 // HGetAll returns all fields and values of the hash stored at key
 func HGetAll(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	resValue, err := ctx.CodecCtx.DB.Storage.HGetAll(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	resValue, err := ctx.CodecCtx.DB.Storage.HGetAll(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -93,7 +93,7 @@ func HGetAll(ctx *CmdContext) error {
 func HExists(ctx *CmdContext) error {
 	key := ctx.Args[0]
 	field := ctx.Args[1]
-	val, err := ctx.CodecCtx.DB.Storage.HGet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field)
+	val, err := ctx.CodecCtx.DB.Storage.HGet(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, field)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -117,7 +117,7 @@ func HIncrBy(ctx *CmdContext) error {
 		return nil
 	}
 
-	res, err := ctx.CodecCtx.DB.Storage.HIncrBy(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field, value)
+	res, err := ctx.CodecCtx.DB.Storage.HIncrBy(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, field, value)
 	if err != nil {
 		if strings.Contains(err.Error(), "-4262") {
 			ctx.OutContent = resp.EncError("ERR " + err.Error())
@@ -143,7 +143,7 @@ func HIncrByFloat(ctx *CmdContext) error {
 		return nil
 	}
 
-	f64, err := ctx.CodecCtx.DB.Storage.HIncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, field, value)
+	f64, err := ctx.CodecCtx.DB.Storage.HIncrByFloat(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, field, value)
 	if err != nil {
 		if strings.Contains(err.Error(), "-4262") {
 			ctx.OutContent = resp.EncError("ERR " + err.Error())
@@ -159,7 +159,7 @@ func HIncrByFloat(ctx *CmdContext) error {
 // HKeys returns all field names in the hash stored at key
 func HKeys(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	resValue, err := ctx.CodecCtx.DB.Storage.HKeys(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	resValue, err := ctx.CodecCtx.DB.Storage.HKeys(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -171,7 +171,7 @@ func HKeys(ctx *CmdContext) error {
 // HVals returns all values in the hash stored at key
 func HVals(ctx *CmdContext) error {
 	key := ctx.Args[0]
-	resValue, err := ctx.CodecCtx.DB.Storage.HVals(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	resValue, err := ctx.CodecCtx.DB.Storage.HVals(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -183,7 +183,7 @@ func HVals(ctx *CmdContext) error {
 // HLen returns the number of fields contained in the hash stored at key
 func HLen(ctx *CmdContext) error {
 	key := []byte(ctx.Args[0])
-	size, err := ctx.CodecCtx.DB.Storage.HLen(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key)
+	size, err := ctx.CodecCtx.DB.Storage.HLen(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -199,7 +199,7 @@ func HMGet(ctx *CmdContext) error {
 	fields := make([][]byte, len(kvs))
 	copy(fields, kvs)
 
-	values, err := ctx.CodecCtx.DB.Storage.HMGet(ctx.CodecCtx.DB.Ctx, ctx.CodecCtx.DB.ID, key, fields)
+	values, err := ctx.CodecCtx.DB.Storage.HMGet(ctx.CodecCtx.DB.Ctx, ctx.FullName, ctx.CodecCtx.DB.ID, key, fields)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	} else {
@@ -216,7 +216,7 @@ func HashCmdWithKey(ctx *CmdContext) error {
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
 		table.NewColumn(keyColumnName, key),
 	}
-	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, hashTableName, rowKey, ctx.PlainReq)
+	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
 		ctx.OutContent = resp.EncError("ERR " + err.Error())
 	}

@@ -52,11 +52,14 @@ func getRandomArray(min int, max int, count int) []int {
 }
 
 // ObServerCmd is a general interface for commands that can be executed on the observer side
-func (s *Storage) ObServerCmd(ctx context.Context, tableName string, rowKey []*table.Column, plainText []byte) (string, error) {
+func (s *Storage) ObServerCmd(ctx context.Context, cmdName string, rowKey []*table.Column, plainText []byte) (string, error) {
 	mutateColumns := []*table.Column{
 		table.NewColumn("REDIS_CODE_STR", plainText),
 	}
-
+	tableName, err := s.getTableNameByCmdName(cmdName)
+	if err != nil {
+		return "", err
+	}
 	// Create query
 	result, err := s.cli.Redis(
 		ctx,

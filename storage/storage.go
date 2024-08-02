@@ -37,44 +37,44 @@ type Storage interface {
 	Persist(ctx context.Context, db int64, key []byte) (int, error)
 
 	// string commands
-	Get(ctx context.Context, db int64, key []byte) ([]byte, error)
-	Set(ctx context.Context, db int64, key []byte, value []byte) error
-	PSetEx(ctx context.Context, db int64, key []byte, expireTime uint64, value []byte) error
-	SetEx(ctx context.Context, db int64, key []byte, expireTime uint64, value []byte) error
-	MGet(ctx context.Context, db int64, keys [][]byte) ([][]byte, error)
-	MSet(ctx context.Context, db int64, kv map[string][]byte) (int, error)
-	SetNx(ctx context.Context, db int64, key []byte, value []byte) (int, error)
-	Append(ctx context.Context, db int64, key []byte, value []byte) (int, error)
-	IncrBy(ctx context.Context, db int64, key []byte, value []byte) (int64, error)
-	IncrByFloat(ctx context.Context, db int64, key []byte, value []byte) (float64, error)
-	GetBit(ctx context.Context, db int64, key []byte, offset int) (byte, error)
+	Get(ctx context.Context, cmdName string, db int64, key []byte) ([]byte, error)
+	Set(ctx context.Context, cmdName string, db int64, key []byte, value []byte) error
+	PSetEx(ctx context.Context, cmdName string, db int64, key []byte, expireTime uint64, value []byte) error
+	SetEx(ctx context.Context, cmdName string, db int64, key []byte, expireTime uint64, value []byte) error
+	MGet(ctx context.Context, cmdName string, db int64, keys [][]byte) ([][]byte, error)
+	MSet(ctx context.Context, cmdName string, db int64, kv map[string][]byte) (int, error)
+	SetNx(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int, error)
+	Append(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int, error)
+	IncrBy(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (int64, error)
+	IncrByFloat(ctx context.Context, cmdName string, db int64, key []byte, value []byte) (float64, error)
+	GetBit(ctx context.Context, cmdName string, db int64, key []byte, offset int) (byte, error)
 
 	// hash commands
-	HSetNx(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int, error)
-	HMGet(ctx context.Context, db int64, key []byte, fields [][]byte) ([][]byte, error)
-	HGet(ctx context.Context, db int64, key []byte, field []byte) ([]byte, error)
-	HDel(ctx context.Context, db int64, key []byte, fields [][]byte) (int64, error)
-	HGetAll(ctx context.Context, db int64, key []byte) ([][]byte, error)
-	HKeys(ctx context.Context, db int64, key []byte) ([][]byte, error)
-	HVals(ctx context.Context, db int64, key []byte) ([][]byte, error)
-	HLen(ctx context.Context, db int64, key []byte) (int64, error)
-	HIncrBy(ctx context.Context, db int64, key []byte, field []byte, value []byte) (int64, error)
-	HIncrByFloat(ctx context.Context, db int64, key []byte, field []byte, value []byte) (float64, error)
+	HSetNx(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (int, error)
+	HMGet(ctx context.Context, cmdName string, db int64, key []byte, fields [][]byte) ([][]byte, error)
+	HGet(ctx context.Context, cmdName string, db int64, key []byte, field []byte) ([]byte, error)
+	HDel(ctx context.Context, cmdName string, db int64, key []byte, fields [][]byte) (int64, error)
+	HGetAll(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error)
+	HKeys(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error)
+	HVals(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error)
+	HLen(ctx context.Context, cmdName string, db int64, key []byte) (int64, error)
+	HIncrBy(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (int64, error)
+	HIncrByFloat(ctx context.Context, cmdName string, db int64, key []byte, field []byte, value []byte) (float64, error)
 
 	// set commands
-	SCard(ctx context.Context, db int64, key []byte) (int64, error)
-	SIsmember(ctx context.Context, db int64, key []byte, member []byte) (int, error)
-	SMembers(ctx context.Context, db int64, key []byte) ([][]byte, error)
-	Smove(ctx context.Context, db int64, src []byte, dst []byte, member []byte) (int, error)
-	SPop(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
-	SRandMember(ctx context.Context, db int64, key []byte, count int) ([][]byte, error)
-	SRem(ctx context.Context, db int64, key []byte, members [][]byte) (int64, error)
+	SCard(ctx context.Context, cmdName string, db int64, key []byte) (int64, error)
+	SIsmember(ctx context.Context, cmdName string, db int64, key []byte, member []byte) (int, error)
+	SMembers(ctx context.Context, cmdName string, db int64, key []byte) ([][]byte, error)
+	Smove(ctx context.Context, cmdName string, db int64, src []byte, dst []byte, member []byte) (int, error)
+	SPop(ctx context.Context, cmdName string, db int64, key []byte, count int) ([][]byte, error)
+	SRandMember(ctx context.Context, cmdName string, db int64, key []byte, count int) ([][]byte, error)
+	SRem(ctx context.Context, cmdName string, db int64, key []byte, members [][]byte) (int64, error)
 
 	// server commands
 	GetTableInfo(ctx context.Context, db int64, tableName string) (*obkv.TableInfo, error)
 
 	// general interface for commands that can be executed on the observer side
-	ObServerCmd(ctx context.Context, tableName string, rowKey []*table.Column, plainText []byte) (string, error)
+	ObServerCmd(ctx context.Context, cmdName string, rowKey []*table.Column, plainText []byte) (string, error)
 
 	Close() error
 }

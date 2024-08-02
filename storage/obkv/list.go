@@ -31,20 +31,16 @@ CREATE TABLE modis_list_table(
   db BIGINT NOT NULL,
   rkey VARBINARY(1024) NOT NULL,
   is_data tinyint(1) default 1,
-  insert_ts TIMESTAMP(6) DEFAULT NULL, 
+  insert_ts TIMESTAMP(6) DEFAULT NULL,
   expire_ts timestamp(6) default null,
   value VARBINARY(1024) DEFAULT NULL,
-  `index` BIGINT NOT NULL,             
+  `index` BIGINT NOT NULL,
   PRIMARY KEY(db, rkey, is_data, `index`)
 )
 KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "list"}}'
-PARTITION BY KEY(db, rkey)            
+PARTITION BY KEY(db, rkey)
 PARTITIONS 3;
 */
-
-const (
-	listTableName = "modis_list_table"
-)
 
 // listExists check the number of keys that exist in list table
 func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
@@ -61,7 +57,7 @@ func (s *Storage) listExists(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, keys[i]),
 			table.NewColumn(indexColumnName, int64(math.MinInt64)),
 		}
-		list_len, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(encodedArray))
+		list_len, err := s.ObServerCmd(ctx, "llen", rowKey, []byte(encodedArray))
 		if err != nil {
 			return exist_key_count, err
 		}
@@ -94,7 +90,7 @@ func (s *Storage) deleteList(ctx context.Context, db int64, keys [][]byte) (int6
 			table.NewColumn(keyColumnName, keys[i]),
 			table.NewColumn(indexColumnName, int64(math.MinInt64)),
 		}
-		res, err := s.ObServerCmd(ctx, listTableName, rowKey, []byte(encodedArray))
+		res, err := s.ObServerCmd(ctx, "ldel", rowKey, []byte(encodedArray))
 		if err != nil {
 			continue
 		}
