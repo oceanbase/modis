@@ -17,14 +17,15 @@
 package obkv
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
-	"net/url"
+	"strconv"
+	"strings"
 
+	"github.com/oceanbase/modis/util"
 	"github.com/oceanbase/obkv-table-client-go/client"
-	"github.com/oceanbase/obkv-table-client-go/client/option"
 	"github.com/oceanbase/obkv-table-client-go/protocol"
-	"github.com/oceanbase/obkv-table-client-go/table"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -35,8 +36,9 @@ const (
 	indexColumnName  = "index"
 	isDataColumnName = "is_data"
 
-	jdbc_database  = "oceanbase"
-	table_sys_name = "__all_obkv_redis_command_to_tablename"
+	driver         = "mysql"
+	dsnFormat      = "root@%s:%s@tcp(%s:%d)/oceanbase"
+	table_sys_name = "DBA_OB_KV_REDIS_TABLE"
 )
 
 type Storage struct {
@@ -78,55 +80,76 @@ func (s *Storage) getTableNameByCmdName(cmd string) (string, error) {
 	return val, nil
 }
 
-func (s *Storage) getJDBCUrl() (client.Client, error) {
-	u, err := url.Parse(s.cfg.cliCfg.configUrl)
+func (s *Storage) getServerAddr() (*util.ObServerAddr, error) {
+	var resp util.ObHttpRslistResponse
+	err := util.GetConfigServerResponseOrNull(s.cfg.cliCfg.configUrl,
+		s.cfg.cliCfg.cfg.RsListHttpGetTimeout,
+		s.cfg.cliCfg.cfg.RsListHttpGetRetryTimes,
+		s.cfg.cliCfg.cfg.RsListHttpGetRetryInterval,
+		&resp)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessagef(err, "get remote ocp response, url:%s", s.cfg.cliCfg.configUrl)
+	}
+	rslist := util.NewRslist()
+
+	for _, server := range resp.Data.RsList {
+		// split ip and port, server.Address(xx.xx.xx.xx:xx)
+		res := strings.Split(server.Address, ":")
+		if len(res) != 2 {
+			return nil, errors.Errorf("fail to split ip and port, server:%s", server.Address)
+		}
+		ip := res[0]
+		if ip == "172.16.46.180" {
+			ip = "115.29.212.38"
+			println(ip)
+		}
+		svrPort, err := strconv.Atoi(res[1])
+		if err != nil {
+			return nil, errors.Errorf("fail to convert server port to int, port:%s", res[1])
+		}
+		serverAddr := util.NewObServerAddr(ip, server.SqlPort, svrPort)
+		rslist.Append(serverAddr)
 	}
 
-	q := u.Query()
-	q.Set("database", jdbc_database)
-	u.RawQuery = q.Encode()
-	cli, err := client.NewClient(
-		u.String(),
-		s.cfg.cliCfg.fullUserName,
-		s.cfg.cliCfg.password,
-		s.cfg.cliCfg.sysUserName,
-		s.cfg.cliCfg.sysPassword,
-		s.cfg.cliCfg.cfg)
-	if err != nil {
-		return nil, err
+	if rslist.Size() == 0 {
+		return nil, errors.Errorf("failed to load Rslist, url:%s", s.cfg.cliCfg.configUrl)
 	}
-	return cli, nil
+	return rslist.Get(), nil
 }
 
 func (s *Storage) getTableNames() error {
-	jdbcHandler, err := s.getJDBCUrl()
+	serverAddr, err := s.getServerAddr()
+	if err != nil {
+		return errors.New("fail to get server addr")
+	}
+
+	tenantName := util.GetTenantName(s.cfg.cliCfg.fullUserName)
+	if len(tenantName) == 0 {
+		return errors.Errorf("fullUserName not invalid %s", s.cfg.cliCfg.fullUserName)
+	}
+
+	dsn := fmt.Sprintf(dsnFormat, tenantName, s.cfg.cliCfg.password, serverAddr.Ip(), serverAddr.SqlPort())
+	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return err
 	}
-	startRowKey := []*table.Column{table.NewColumn("command_name", table.Min), table.NewColumn("table_name", table.Min)}
-	endRowKey := []*table.Column{table.NewColumn("command_name", table.Max), table.NewColumn("table_name", table.Max)}
-	keyRanges := []*table.RangePair{table.NewRangePair(startRowKey, endRowKey)}
-	resultIter, err := jdbcHandler.Query(
-		context.TODO(),
-		table_sys_name,
-		keyRanges,
-		option.WithQuerySelectColumns([]string{"command_name", "table_name"}),
-		option.WithQueryOffset(0),
-	)
+
+	rows, err := db.Query("select command_name, table_name from DBA_OB_KV_REDIS_TABLE")
 	if err != nil {
 		return err
 	}
-	iter, err := resultIter.Next()
-	for ; iter != nil && err == nil; iter, err = resultIter.Next() {
-		commandName := iter.Value("command_name").(string)
-		tableName := iter.Value("table_name").(string)
-		if _, ok := s.tables[commandName]; !ok {
-			s.tables[commandName] = tableName
+	defer rows.Close()
+
+	for rows.Next() {
+		var commandName string
+		var tableName string
+		err := rows.Scan(&commandName, &tableName)
+		if err != nil {
+			return err
 		}
+		s.tables[commandName] = tableName
 	}
-	if err != nil {
+	if err = rows.Err(); err != nil {
 		return err
 	}
 	return nil
