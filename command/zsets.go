@@ -31,7 +31,7 @@ func ZSetCmdWithKey(ctx *CmdContext) error {
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, key),
+		table.NewColumn(vitualKeyColumnName, key),
 	}
 	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {
@@ -44,7 +44,7 @@ func ZIncrBy(ctx *CmdContext) error {
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, ctx.Args[0]),
+		table.NewColumn(vitualKeyColumnName, ctx.Args[0]),
 		table.NewColumn(memberColumnName, ctx.Args[2]),
 	}
 	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
@@ -58,7 +58,7 @@ func ZSetCmdWithKeyMember(ctx *CmdContext) error {
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, ctx.Args[0]),
+		table.NewColumn(vitualKeyColumnName, ctx.Args[0]),
 		table.NewColumn(memberColumnName, ctx.Args[1]),
 	}
 	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
@@ -72,7 +72,7 @@ func ZRangeByScore(ctx *CmdContext) error {
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, ctx.Args[0]),
+		table.NewColumn(vitualKeyColumnName, ctx.Args[0]),
 		table.NewColumn(memberColumnName, ctx.Args[1]),
 	}
 	is_count_less_zero := false

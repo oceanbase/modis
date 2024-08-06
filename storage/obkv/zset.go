@@ -24,22 +24,6 @@ import (
 	"github.com/oceanbase/obkv-table-client-go/table"
 )
 
-/*
-zset model:
-CREATE TABLE modis_zset_table(
-  db bigint not null,
-  rkey varbinary(1024) not null,
-  is_data tinyint(1) default 1,
-  insert_ts timestamp(6) DEFAULT NULL,
-  expire_ts timestamp(6) default null,
-  member varbinary(1024) not null,
-  score double default null,
-  index index_score(db, rkey, score) local,
-  PRIMARY KEY(db, rkey, is_data, member))
-  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
-  PARTITION BY KEY(db, rkey) PARTITIONS 3;
-*/
-
 // zsetExists check the number of keys that exist in zset table
 func (s *Storage) zsetExists(ctx context.Context, db int64, keys [][]byte) (int64, error) {
 	var existNum int64 = 0

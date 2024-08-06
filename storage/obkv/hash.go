@@ -29,20 +29,6 @@ import (
 	"github.com/oceanbase/modis/util"
 )
 
-/*
-CREATE TABLE modis_hash_table(
-  db bigint not null,
-  rkey varbinary(1024) not null,
-  is_data tinyint(1) default 1,
-  insert_ts timestamp(6) DEFAULT NULL,
-  expire_ts timestamp(6) default null,
-  field varbinary(1024) not null,
-  value varbinary(1024) default null,
-  PRIMARY KEY(db, rkey, is_data, field))
-  KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "hash"}}'
-  PARTITION BY KEY(db, rkey) PARTITIONS 3;
-*/
-
 const (
 	fieldColumnName = "field"
 )

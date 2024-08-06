@@ -142,10 +142,10 @@ func init() {
 	}
 
 	tables = []string{
-		"modis_string_table",
-		"modis_hash_table",
-		"modis_set_table",
-		"modis_list_table",
-		"modis_zset_table",
+		"obkv_redis_string_table",
+		"obkv_redis_hash_table",
+		"obkv_redis_set_table",
+		"obkv_redis_list_table",
+		"obkv_redis_zset_table",
 	}
 }

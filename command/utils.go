@@ -29,17 +29,18 @@ import (
 type void struct{}
 
 const (
-	dbColumnName     = "db"
-	keyColumnName    = "rkey"
-	valueColumnName  = "value"
-	expireColumnName = "expire_ts"
-	memberColumnName = "member"
-	indexColumnName  = "index"
-	stringTableName  = "modis_string_table"
-	setTableName     = "modis_set_table"
-	listTableName    = "modis_list_table"
-	hashTableName    = "modis_hash_table"
-	zsetTableName    = "modis_zset_table"
+	dbColumnName        = "db"
+	keyColumnName       = "rkey"
+	vitualKeyColumnName = "vk"
+	valueColumnName     = "value"
+	expireColumnName    = "expire_ts"
+	memberColumnName    = "member"
+	indexColumnName     = "index"
+	stringTableName     = "obkv_redis_string_table"
+	setTableName        = "obkv_redis_set_table"
+	listTableName       = "obkv_redis_list_table"
+	hashTableName       = "obkv_redis_hash_table"
+	zsetTableName       = "obkv_redis_zset_table"
 )
 
 var (

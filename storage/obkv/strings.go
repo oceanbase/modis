@@ -28,17 +28,6 @@ import (
 	"github.com/oceanbase/modis/util"
 )
 
-/*
-strings table model:
-	create table modis_string_table(
-		db bigint not null,
-		rkey varbinary(1024) not null,
-		value varbinary(1024) not null,
-		expire_ts timestamp(6) default null,
-		primary key(db, rkey)) TTL(expire_ts + INTERVAL 0 SECOND)
-		partition by key(db, rkey) partitions 3;
-*/
-
 // Get value by key. Return value if exists, nil if not exists
 func (s *Storage) Get(ctx context.Context, cmdName string, db int64, key []byte) ([]byte, error) {
 	tableName, err := s.getTableNameByCmdName(cmdName)

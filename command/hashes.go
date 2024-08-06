@@ -214,7 +214,7 @@ func HashCmdWithKey(ctx *CmdContext) error {
 	var err error
 	rowKey := []*table.Column{
 		table.NewColumn(dbColumnName, ctx.CodecCtx.DB.ID),
-		table.NewColumn(keyColumnName, key),
+		table.NewColumn(vitualKeyColumnName, key),
 	}
 	ctx.OutContent, err = ctx.CodecCtx.DB.Storage.ObServerCmd(ctx.CodecCtx.DB.Ctx, ctx.FullName, rowKey, ctx.PlainReq)
 	if err != nil {

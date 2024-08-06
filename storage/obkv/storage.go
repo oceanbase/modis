@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/util"
 	"github.com/oceanbase/obkv-table-client-go/client"
 	"github.com/oceanbase/obkv-table-client-go/client/option"
@@ -53,11 +54,11 @@ const (
 
 var (
 	tbNames = []string{
-		"modis_string_table",
-		"modis_set_table",
-		"modis_list_table",
-		"modis_hash_table",
-		"modis_zset_table",
+		"obkv_redis_string_table",
+		"obkv_redis_set_table",
+		"obkv_redis_list_table",
+		"obkv_redis_hash_table",
+		"obkv_redis_zset_table",
 	}
 	getRouteCommand = []byte("*2\r\n$3\r\nTTL\r\n$1\r\nk\r\n")
 	mockKey         = []byte("k")
@@ -118,6 +119,11 @@ func (s *Storage) Initialize() error {
 	}
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
 	s.cli = cli
+	err = s.tryPrefetchRoute()
+	if err != nil {
+		log.Warn("Storage", nil, "fail to prefetch route", log.Errors(err))
+		return err
+	}
 	return s.getTableNames()
 }
 

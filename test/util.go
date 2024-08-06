@@ -52,33 +52,32 @@ const (
 	SqlPassWord = ""
 	SqlIp       = "127.0.0.1"
 	SqlPort     = "20903"
-	SqlDatabase = "test"
+	SqlDatabase = "obkv_redis"
 )
 
 // table sql
 const (
-	TestModisZSetTableName       = "modis_zset_table"
-	TestModisZSetCreateStatement = `CREATE TABLE if not exists modis_zset_table(
-	db bigint not null,
-	rkey varbinary(1024) not null,
-	is_data tinyint(1) default 1,
-	insert_ts timestamp(6) DEFAULT NULL,
-	expire_ts timestamp(6) default null,
-	member varbinary(1024) not null,
-	score double default null,
-	index index_score(db, rkey, score) local,
-	PRIMARY KEY(db, rkey, is_data, member))
-	KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
-	PARTITION BY KEY(db, rkey) PARTITIONS 3;`
-
-	TestModisListTableName       = "modis_list_table"
-	TestModisListCreateStatement = "CREATE TABLE if not exists modis_list_table(" +
-		"db BIGINT NOT NULL," +
-		"rkey VARBINARY(1024) NOT NULL," +
-		"is_data tinyint(1) default 1," +
-		"insert_ts TIMESTAMP(6) DEFAULT NULL, " +
+	TestModisZSetTableName       = "obkv_redis_zset_table"
+	TestModisZSetCreateStatement = "create table if not exists obkv_redis_zset_table(" +
+		"db bigint not null," +
+		"rkey varbinary(16384) not null," +
 		"expire_ts timestamp(6) default null," +
-		"value VARBINARY(1024) DEFAULT NULL," +
+		"insert_ts timestamp(6) DEFAULT CURRENT_TIMESTAMP(6)," +
+		"score double default null," +
+		"vk varbinary(16384) GENERATED ALWAYS AS (substr(rkey,9,conv(substr(rkey,1,8),16,10))) VIRTUAL," +
+		"index index_score(db, vk, score) local," +
+		"PRIMARY KEY(db, rkey))" +
+		"KV_ATTRIBUTES ='{\"Redis\": {\"isTTL\": true, \"model\": \"zset\"}}'" +
+		"PARTITION BY KEY(db, vk) PARTITIONS 3;"
+
+	TestModisListTableName       = "obkv_redis_list_table"
+	TestModisListCreateStatement = "CREATE TABLE if not exists obkv_redis_list_table(" +
+		"db BIGINT NOT NULL," +
+		"rkey VARBINARY(16384) NOT NULL," +
+		"expire_ts timestamp(6) default null," +
+		"insert_ts TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6)," +
+		"is_data tinyint(1) default 1," +
+		"value VARBINARY(1048576) DEFAULT NULL," +
 		"`index` BIGINT NOT NULL," +
 		"PRIMARY KEY(db, rkey, is_data, `index`)" +
 		")" +
@@ -86,40 +85,38 @@ const (
 		"PARTITION BY KEY(db, rkey)" +
 		"PARTITIONS 3;"
 
-	TestModisStringTableName       = "modis_string_table"
-	TestModisStringCreateStatement = `create table if not exists modis_string_table(
-		db bigint not null,
-		rkey varbinary(1024) not null,
-		value varbinary(1024) not null,
-		expire_ts timestamp(6) default null,
-		primary key(db, rkey)) 
-		TTL(expire_ts + INTERVAL 0 SECOND) 
-		partition by key(db, rkey) partitions 3;`
+	TestModisStringTableName       = "obkv_redis_string_table"
+	TestModisStringCreateStatement = "create table if not exists obkv_redis_string_table(" +
+		"db bigint not null," +
+		"rkey varbinary(16384) not null," +
+		"expire_ts timestamp(6) default null," +
+		"value varbinary(1048576) not null, " +
+		"primary key(db, rkey)) " +
+		"KV_ATTRIBUTES ='{\"Redis\": {\"isTTL\": true, \"model\": \"string\"}}'" +
+		"partition by key(db, rkey) partitions 3;"
 
-	TestModisSetTableName       = "modis_set_table"
-	TestModisSetCreateStatement = `CREATE TABLE if not exists modis_set_table(
+	TestModisSetTableName       = "obkv_redis_set_table"
+	TestModisSetCreateStatement = `CREATE TABLE if not exists obkv_redis_set_table(
 		db bigint not null,
-		rkey varbinary(1024) not null,
-		is_data tinyint(1) default 1,
-		insert_ts timestamp(6) DEFAULT NULL,
+		rkey varbinary(16384) not null,
 		expire_ts timestamp(6) default null,
-		member varbinary(1024) not null,
-		PRIMARY KEY(db, rkey, is_data, member))
+		insert_ts timestamp(6) DEFAULT CURRENT_TIMESTAMP(6),
+		vk varbinary(16384) GENERATED ALWAYS AS (substr(rkey,9,conv(substr(rkey,1,8),16,10))) VIRTUAL,
+		PRIMARY KEY(db, rkey))
 		KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "zset"}}'
-		PARTITION BY KEY(db, rkey) PARTITIONS 3;`
+		PARTITION BY KEY(db, vk) PARTITIONS 3;`
 
-	TestModisHashTableName       = "modis_hash_table"
-	TestModisHashCreateStatement = `CREATE TABLE if not exists modis_hash_table(
+	TestModisHashTableName       = "obkv_redis_hash_table"
+	TestModisHashCreateStatement = `CREATE TABLE if not exists obkv_redis_hash_table(
 		db bigint not null,
-		rkey varbinary(1024) not null,
-		is_data tinyint(1) default 1,
-		insert_ts timestamp(6) DEFAULT NULL,
+		rkey varbinary(16384) not null,
 		expire_ts timestamp(6) default null,
-		field varbinary(1024) not null,
-		value varbinary(1024) default null,
-		PRIMARY KEY(db, rkey, is_data, field))
+		insert_ts timestamp(6) DEFAULT CURRENT_TIMESTAMP(6),
+		value varbinary(1048576) default null,
+		vk varbinary(16384) GENERATED ALWAYS AS (substr(rkey,9,conv(substr(rkey,1,8),16,10))) VIRTUAL,
+		PRIMARY KEY(db, rkey))
 		KV_ATTRIBUTES ='{"Redis": {"isTTL": true, "model": "hash"}}'
-		PARTITION BY KEY(db, rkey) PARTITIONS 3;`
+		PARTITION BY KEY(db, vk) PARTITIONS 3;`
 )
 
 var GlobalDB *sql.DB
