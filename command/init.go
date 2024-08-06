@@ -18,7 +18,6 @@ package command
 
 var (
 	commands map[string]*CmdInfo
-	tables   []string
 )
 
 func init() {
@@ -139,13 +138,5 @@ func init() {
 		"llen":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"lrem":      {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"rpoplpush": {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-	}
-
-	tables = []string{
-		"obkv_redis_string_table",
-		"obkv_redis_hash_table",
-		"obkv_redis_set_table",
-		"obkv_redis_list_table",
-		"obkv_redis_zset_table",
 	}
 }

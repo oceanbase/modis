@@ -17,19 +17,14 @@
 package obkv
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/oceanbase/modis/log"
 	"github.com/oceanbase/modis/util"
 	"github.com/oceanbase/obkv-table-client-go/client"
-	"github.com/oceanbase/obkv-table-client-go/client/option"
 	"github.com/oceanbase/obkv-table-client-go/protocol"
-	"github.com/oceanbase/obkv-table-client-go/table"
 	"github.com/pkg/errors"
 )
 
@@ -46,24 +41,6 @@ const (
 	table_sys_name = "DBA_OB_KV_REDIS_TABLE"
 )
 
-// for prefetch route
-const (
-	routeTimeout = time.Second * 20
-	mockDB       = int64(0)
-)
-
-var (
-	tbNames = []string{
-		"obkv_redis_string_table",
-		"obkv_redis_set_table",
-		"obkv_redis_list_table",
-		"obkv_redis_hash_table",
-		"obkv_redis_zset_table",
-	}
-	getRouteCommand = []byte("*2\r\n$3\r\nTTL\r\n$1\r\nk\r\n")
-	mockKey         = []byte("k")
-)
-
 type Storage struct {
 	cli    client.Client
 	cfg    *Config
@@ -75,34 +52,6 @@ func NewStorage(cfg *Config) *Storage {
 		cfg:    cfg,
 		tables: make(map[string]string),
 	}
-}
-
-func (s *Storage) tryPrefetchRoute() error {
-	mutateColumns := []*table.Column{
-		table.NewColumn("REDIS_CODE_STR", getRouteCommand),
-	}
-	rowKey := []*table.Column{
-		table.NewColumn(dbColumnName, mockDB),
-		table.NewColumn(keyColumnName, mockKey),
-	}
-
-	for _, tableName := range tbNames {
-		ctx, _ := context.WithTimeout(context.Background(), routeTimeout)
-		_, err := s.cli.Redis(
-			ctx,
-			tableName,
-			rowKey,
-			mutateColumns,
-			option.WithReturnAffectedEntity(true),
-		)
-		if err != nil {
-			fmt.Println(err.Error())
-			fmt.Println(tableName)
-			return err
-		}
-	}
-
-	return nil
 }
 
 // Initialize init obkv storage
@@ -119,11 +68,6 @@ func (s *Storage) Initialize() error {
 	}
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
 	s.cli = cli
-	err = s.tryPrefetchRoute()
-	if err != nil {
-		log.Warn("Storage", nil, "fail to prefetch route", log.Errors(err))
-		return err
-	}
 	return s.getTableNames()
 }
 
