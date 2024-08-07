@@ -44,6 +44,7 @@ type ClientConfig struct {
 func NewClientConfig(cfg *config.ObkvStorageConfig) *ClientConfig {
 	cliCfg := obkvcfg.NewDefaultClientConfig()
 	cliCfg.ConnPoolMaxConnSize = cfg.ConnectionPoolSize
+	cliCfg.NeedCalculateGenerateColumn = false
 	return &ClientConfig{
 		configUrl:    cfg.ConfigServerUrl,
 		fullUserName: cfg.FullUserName,

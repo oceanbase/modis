@@ -67,7 +67,6 @@ func (s *Storage) Initialize() error {
 		return err
 	}
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
-
 	s.cli = cli
 	return s.getTableNames()
 }

@@ -201,11 +201,11 @@ func TestKey_Type(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, res, typeModis)
 
-	// set
-	res += ", set"
-	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
+	// list
+	res += ", list"
+	lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
 	assert.Equal(t, nil, err)
-	assert.EqualValues(t, 1, saddModis)
+	assert.EqualValues(t, 1, lpushModis)
 	typeModis, err = mCli.Type(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, res, typeModis)
@@ -219,11 +219,11 @@ func TestKey_Type(t *testing.T) {
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, res, typeModis)
 
-	// list
-	res += ", list"
-	lpushModis, err := mCli.LPush(context.TODO(), key, element).Result()
+	// set
+	res += ", set"
+	saddModis, err := mCli.SAdd(context.TODO(), key, member).Result()
 	assert.Equal(t, nil, err)
-	assert.EqualValues(t, 1, lpushModis)
+	assert.EqualValues(t, 1, saddModis)
 	typeModis, err = mCli.Type(context.TODO(), key).Result()
 	assert.Equal(t, nil, err)
 	assert.EqualValues(t, res, typeModis)

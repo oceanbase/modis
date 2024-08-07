@@ -18,7 +18,6 @@ package command
 
 var (
 	commands map[string]*CmdInfo
-	tables   []string
 )
 
 func init() {
@@ -112,14 +111,14 @@ func init() {
 		"zrevrange":        {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zrem":             {Cmd: ZSetCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zcard":            {Cmd: ZSetCmdWithKey, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zincrby":          {Cmd: ZIncrBy, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zscore":           {Cmd: ZSetCmdWithKeyMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zrank":            {Cmd: ZSetCmdWithKeyMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zrevrank":         {Cmd: ZSetCmdWithKeyMember, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zincrby":          {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zscore":           {Cmd: ZSetCmdWithKey, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zrank":            {Cmd: ZSetCmdWithKey, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zrevrank":         {Cmd: ZSetCmdWithKey, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zremrangebyrank":  {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zcount":           {Cmd: ZSetCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zrangebyscore":    {Cmd: ZRangeByScore, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"zrevrangebyscore": {Cmd: ZRangeByScore, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zrangebyscore":    {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"zrevrangebyscore": {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zremrangebyscore": {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zunionstore":      {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"zinterstore":      {Cmd: ZSetCmdWithKey, Arity: -4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
@@ -139,13 +138,5 @@ func init() {
 		"llen":      {Cmd: ListCmd, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"lrem":      {Cmd: ListCmd, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"rpoplpush": {Cmd: TempNotSupport, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-	}
-
-	tables = []string{
-		"modis_string_table",
-		"modis_hash_table",
-		"modis_set_table",
-		"modis_list_table",
-		"modis_zset_table",
 	}
 }

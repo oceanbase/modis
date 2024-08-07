@@ -44,15 +44,18 @@ func main() {
 	// go func() {
 	// 	http.ListenAndServe(":6060", nil)
 	// }()
+	// try read flags
 	sv, configPath := readFlags()
 	if sv {
 		showVersion()
 		os.Exit(0)
 	}
+
+	// init config
 	var err error
 	_, err = config.LoadConfig(configPath)
 	if err != nil {
-		fmt.Println("fail to load config", err)
+		fmt.Println("fail to load config, ", err)
 		os.Exit(1)
 	}
 
@@ -66,11 +69,12 @@ func main() {
 
 	err = log.InitLoggerWithConfig(cfg.Log, log_watcher)
 	if err != nil {
-		fmt.Println("fail to init logger", err)
+		fmt.Println("fail to init logger, ", err)
 		os.Exit(1)
 	}
 	defer log.Sync()
 
+	// init storage
 	s, err := storage.Open(&cfg.Storage.ObkvConfig)
 	if err != nil {
 		fmt.Println("open DB failed", err.Error())
@@ -78,6 +82,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// init TLS
 	var tlsConfig *tls.Config
 	tlsConfig, err = server.TLSConfig(cfg.Server.SSLCertFile, cfg.Server.SSLKeyFile)
 	if err != nil {
@@ -85,6 +90,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// init server
 	srvCtx, err := conncontext.NewServerContext(s, &cfg, configPath)
 	if err != nil {
 		log.Warn("main", "", "fail new server context", log.Errors(err))
