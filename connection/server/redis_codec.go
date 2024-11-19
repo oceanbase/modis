@@ -28,6 +28,7 @@ import (
 	respPak "github.com/oceanbase/modis/protocol/resp"
 	"github.com/oceanbase/obkv-table-client-go/obkvrpc"
 	"github.com/oceanbase/obkv-table-client-go/util"
+	mutil "github.com/oceanbase/modis/util"
 
 	"github.com/google/uuid"
 )
@@ -51,7 +52,7 @@ func (rs *RedisCodec) GetCloseChan() *chan struct{} {
 // ReadRequest implement obkvrpc.CodecServer interface
 func (rs *RedisCodec) ReadRequest(req *obkvrpc.Request) error {
 	req.ID = uuid.NewString()
-	args, err := rs.readCommand(&req.PlainReq)
+	args, err := rs.readCommand(req)
 	if err != nil {
 		log.Warn("server", req.ID, "fail to read command", log.Errors(err))
 		return err
@@ -90,6 +91,7 @@ func (rs *RedisCodec) Call(req *obkvrpc.Request, resp *obkvrpc.Response) error {
 		ctx.OutContent[outLen-1] != '\n' ||
 		ctx.OutContent[outLen-2] != '\r' {
 		// should end with \r\n, otherwise redis-cli may get stuck
+		log.Warn("Server", ctx.TraceID, "OutContent has syntax error", log.String("err msg", ctx.OutContent))
 		ctx.OutContent = respPak.ResponseOutContentErr
 	}
 
@@ -126,10 +128,10 @@ func (rs *RedisCodec) Close() {
 	rs.ServCtx.Clients.Del(rs.CodecCtx.ID)
 }
 
-func (rs *RedisCodec) readCommand(plainReq *[]byte) ([][]byte, error) {
+func (rs *RedisCodec) readCommand(req *obkvrpc.Request) ([][]byte, error) {
+	plainReq := &req.PlainReq
 	lastReadBytes := *rs.CodecCtx.TotalBytes
-	buf, err := rs.CodecCtx.Reader.ReadBytes('\n')
-	*plainReq = append(*plainReq, buf...)
+	buf, err := mutil.ReadBytesNoClone(rs.CodecCtx.Reader, '\n', plainReq)
 	if err != nil {
 		log.Warn("server", nil, "fail to read bytes", log.Errors(err))
 		return nil, err

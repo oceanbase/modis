@@ -40,12 +40,11 @@ func TestHash_HSet(t *testing.T) {
 	assert.Equal(t, nil, mErr)
 	assert.Equal(t, rVal, mVal)
 
-	// Not Supported Yet
-	// rVal, rErr = rCli.HSet(context.TODO(), "myhash", map[string]interface{}{"key1": "value1", "key2": "value2"}).Result()
-	// assert.Equal(t, nil, rErr)
-	// mVal, mErr = mCli.HSet(context.TODO(), "myhash", map[string]interface{}{"key1": "value1", "key2": "value2"}).Result()
-	// assert.Equal(t, nil, mErr)
-	// assert.Equal(t, rVal, mVal)
+	rVal, rErr = rCli.HSet(context.TODO(), "myhash", map[string]interface{}{"key1": "value1", "key2": "value2"}).Result()
+	assert.Equal(t, nil, rErr)
+	mVal, mErr = mCli.HSet(context.TODO(), "myhash", map[string]interface{}{"key1": "value1", "key2": "value2"}).Result()
+	assert.Equal(t, nil, mErr)
+	assert.Equal(t, rVal, mVal)
 }
 
 func TestHash_HSetNX(t *testing.T) {

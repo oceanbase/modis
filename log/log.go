@@ -19,10 +19,11 @@ package log
 import (
 	"errors"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/fsnotify/fsnotify"
 
 	"github.com/oceanbase/modis/config"
 	kvlog "github.com/oceanbase/obkv-table-client-go/log"
@@ -141,6 +142,12 @@ func InitLoggerWithConfig(cfg config.LogConfig, watcher *fsnotify.Watcher) error
 	}
 
 	if err := watcher.Add(dir); err != nil {
+		Error("Logger", "", "fail to add watcher", Errors(err))
+		fmt.Println("fail to add watcher, ", err)
+		return err
+	}
+
+	if err := watcher.Add(filepath.Dir(logFilePath)); err != nil {
 		Error("Logger", "", "fail to add watcher", Errors(err))
 		fmt.Println("fail to add watcher, ", err)
 		return err

@@ -141,12 +141,11 @@ func NewDecoder(r *bufio.Reader) *Decoder {
 
 // BulkString parses a RESP bulkstring
 func (r *Decoder) BulkString(plainReq *[]byte) ([]byte, error) {
-	line, err := r.bufReader.ReadBytes('\n')
+	line, err := util.ReadBytesNoClone(r.bufReader, '\n', plainReq)
 	if err != nil {
 		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
 		return nil, err
 	}
-	*plainReq = append(*plainReq, line...)
 	l := len(line)
 	if l < len("$*\r\n") || line[l-2] != '\r' || line[0] != '$' {
 		return nil, ErrInvalidProtocol
@@ -158,14 +157,13 @@ func (r *Decoder) BulkString(plainReq *[]byte) ([]byte, error) {
 		return nil, ErrInvalidProtocol
 	}
 
-	body := make([]byte, msgLen+2) // end with \r\n
+	*plainReq = util.ExpandSlice(*plainReq, msgLen+2)
+	body := (*plainReq)[len(*plainReq)-(msgLen+2):]
 	_, err = io.ReadFull(r.bufReader, body)
 	if err != nil {
 		log.Warn("decoder", nil, "fail to read bytes", log.Errors(err))
 		return nil, ErrInvalidProtocol
 	}
-	*plainReq = append(*plainReq, body[:len(body)-2]...)
-	*plainReq = append(*plainReq, []byte{'\r', '\n'}...)
 	return body[:len(body)-2], nil
 }
 

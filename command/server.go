@@ -52,34 +52,6 @@ type DBInfo struct {
 	Expires int64
 }
 
-func formatDBInfo(ctx *CmdContext, infoBuilder *strings.Builder) error {
-	var dbInfo *DBInfo
-	var err error
-	for db := int64(0); db < ctx.ServCtx.DbNum; db++ {
-		if !ctx.ServCtx.IsDBInit(db) {
-			continue
-		}
-		dbInfo, err = getDBInfo(ctx, db)
-		if err != nil {
-			log.Warn("command", ctx.TraceID, "fail to get db info",
-				log.Errors(err), log.Int64("db", db))
-			return err
-		}
-		if dbInfo.Keys > 0 {
-			_, err = infoBuilder.WriteString(fmt.Sprintf(
-				"db%d:keys=%d,expires=%d\r\n",
-				db, dbInfo.Keys, dbInfo.Expires,
-			))
-			if err != nil {
-				log.Warn("command", ctx.TraceID, "fail to write string builder",
-					log.Errors(err), log.Int64("db", db))
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 // Info print modis info
 func Info(ctx *CmdContext) error {
 	type void struct{}

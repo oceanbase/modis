@@ -41,7 +41,7 @@ func Auth(ctx *CmdContext) error {
 	password := util.BytesToString(ctx.Args[0])
 	if password != ctx.ServCtx.Password {
 		ctx.OutContent =
-			resp.EncError("WRONGPASS invalid password.")
+			resp.EncError("WRONGPASS invalid username-password pair or user is disabled.")
 	} else {
 		ctx.OutContent = resp.ResponsesOk
 		ctx.CodecCtx.Authenticated = true

@@ -17,27 +17,31 @@
 package obkv
 
 import (
+	"database/sql"
+	"fmt"
+
+	"github.com/oceanbase/modis/util"
 	"github.com/oceanbase/obkv-table-client-go/client"
 	"github.com/oceanbase/obkv-table-client-go/protocol"
+	"github.com/pkg/errors"
 )
 
 const (
-	dbColumnName     = "db"
-	keyColumnName    = "rkey"
-	valueColumnName  = "value"
-	expireColumnName = "expire_ts"
-	indexColumnName  = "index"
-	isDataColumnName = "is_data"
+	driver         = "mysql"
+	dsnFormat      = "root@%s:%s@tcp(%s:%d)/oceanbase"
+	table_sys_name = "DBA_OB_KV_REDIS_TABLE"
 )
 
 type Storage struct {
-	cli client.Client
-	cfg *Config
+	cli    client.Client
+	cfg    *Config
+	tables map[string]string
 }
 
 func NewStorage(cfg *Config) *Storage {
 	return &Storage{
-		cfg: cfg,
+		cfg:    cfg,
+		tables: make(map[string]string),
 	}
 }
 
@@ -54,8 +58,50 @@ func (s *Storage) Initialize() error {
 		return err
 	}
 	cli.SetEntityType(protocol.ObTableEntityTypeRedis)
-
 	s.cli = cli
+	return s.getTableNames()
+}
+
+func (s *Storage) getTableNameByCmdName(cmd string) (string, error) {
+	val, ok := s.tables[cmd]
+	if !ok {
+		return "", fmt.Errorf("%s not support", cmd)
+	}
+	return val, nil
+}
+
+func (s *Storage) getTableNames() error {
+	serverAddr := s.cli.GetRouteInfo().GetTenantServer()
+
+	tenantName := util.GetTenantName(s.cfg.cliCfg.fullUserName)
+	if len(tenantName) == 0 {
+		return errors.Errorf("fullUserName not invalid %s", s.cfg.cliCfg.fullUserName)
+	}
+
+	dsn := fmt.Sprintf(dsnFormat, tenantName, s.cfg.cliCfg.password, serverAddr.Ip(), serverAddr.SqlPort())
+	db, err := sql.Open(driver, dsn)
+	if err != nil {
+		return err
+	}
+
+	rows, err := db.Query("select command_name, table_name from DBA_OB_KV_REDIS_TABLE")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var commandName string
+		var tableName string
+		err := rows.Scan(&commandName, &tableName)
+		if err != nil {
+			return err
+		}
+		s.tables[commandName] = tableName
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
 	return nil
 }
 
