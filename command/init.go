@@ -42,7 +42,7 @@ func init() {
 
 		// strings
 		"get":         {Cmd: StringCmdWithKey, Arity: 2, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
-		"set":         {Cmd: StringCmdWithKey, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
+		"set":         {Cmd: StringCmdWithKey, Arity: -3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"setnx":       {Cmd: StringCmdWithKey, Arity: 3, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"setex":       {Cmd: StringCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
 		"psetex":      {Cmd: StringCmdWithKey, Arity: 4, Flag: CmdNone, Stats: CmdStats{Calls: 0, MicroSec: 0}},
